@@ -53,7 +53,7 @@ DAYS = 'days'  # type: str
 DEFAULT_NAME = 'JemenaOutlook'
 
 REQUESTS_TIMEOUT = 15
-MIN_TIME_BETWEEN_UPDATES = timedelta(hours=24)
+MIN_TIME_BETWEEN_UPDATES = timedelta(hours=1)
 SCAN_INTERVAL = timedelta(hours=24)
 
 SENSOR_TYPES = {
