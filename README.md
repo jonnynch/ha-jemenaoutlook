@@ -34,7 +34,8 @@ For me this is :-
 
 Or just use git to clone into a jemenaoutlook directory, when using this method make sure teh user home-assistant is running as can read these files.
 ```
-git clone https://github.com/mvandersteen/ha-jemenaoutlook.git jemenaoutlook
+git clone https://github.com/mvandersteen/ha-jemenaoutlook.git
+ln -s  ha-jemenaoutlook/custom_components/jemenaoutlook jemenaoutlook
 ```
 
 ## Configuring the sensor
