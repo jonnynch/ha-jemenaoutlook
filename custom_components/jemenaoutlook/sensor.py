@@ -188,6 +188,11 @@ class JemenaOutlookSensor(Entity):
         return '{} {}'.format(self.client_name, self._name)
 
     @property
+    def unique_id(self):
+        """Return the unique of the sensor."""
+        return '{}_{}'.format(self.client_name, self.type)
+
+    @property
     def state(self):
         """Return the state of the sensor."""
         return self._state
