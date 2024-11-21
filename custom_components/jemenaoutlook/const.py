@@ -50,7 +50,7 @@ SENSOR_TYPES = {
     'weekend_offpeak_cost': ['Weekend offpeak cost', PRICE, 'mdi:currency-usd', None],
     'single_rate_cost': ['Single rate cost', PRICE, 'mdi:currency-usd', None],
     'generation_cost': ['Generation cost', PRICE, 'mdi:currency-usd', None],
-    'this_week_user_type': ['This week user type', 'type', 'mdi:home-account', None],
+    'this_week_user_type': ['This week user type', None, 'mdi:home-account', None],
     'this_week_usage': ['This week usage', KILOWATT_HOUR, 'mdi:flash', SensorStateClass.TOTAL_INCREASING],
     'this_week_consumption': ['This week consumption', KILOWATT_HOUR, 'mdi:flash', SensorStateClass.TOTAL_INCREASING],
     'this_week_consumption_peak': ['This week consumption peak', KILOWATT_HOUR, 'mdi:flash', SensorStateClass.TOTAL_INCREASING],
