@@ -37,14 +37,14 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Jemena Outlook sensor."""
-    name = config.get(CONF_NAME)
+    name = DOMAIN
 
     """Add sensors for passed config_entry in HA."""
     hass_data = hass.data[DOMAIN][config.entry_id]
 
     sensors = []
-    for variable in config[CONF_MONITORED_VARIABLES]:
-        sensors.append(JemenaOutlookSensor(hass_data, variable, name))
+    for key in SENSOR_TYPES.keys():
+        sensors.append(JemenaOutlookSensor(hass_data, key, name))
 
     async_add_entities(sensors)
 
@@ -102,7 +102,7 @@ class JemenaOutlookSensor(CoordinatorEntity[JemenaOutlookDataUpdateCoordinator],
     def state(self):
         """Return the state of the sensor."""
         if type(self.collector.data[self.type]) == type(''):
-            return self.collector.data["data"][self.sensor_name]
+            return self.collector.data[self.type]
         else:
             return round(self.collector.data[self.type], 2)
 

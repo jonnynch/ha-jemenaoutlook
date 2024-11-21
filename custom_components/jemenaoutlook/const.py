@@ -10,7 +10,7 @@ import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 from datetime import timedelta
 
-DOMAIN: Final = "jemena_outlook"
+DOMAIN: Final = "jemenaoutlook"
 COORDINATOR: Final = "coordinator"
 COLLECTOR: Final = "collector"
 UPDATE_LISTENER: Final = "update_listener"

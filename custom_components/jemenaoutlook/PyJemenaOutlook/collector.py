@@ -3,7 +3,7 @@ import logging
 from bs4 import BeautifulSoup
 import json
 import re
-import requests
+import aiohttp
 from homeassistant.util import Throttle
 
 from .const import (
@@ -21,25 +21,25 @@ class Collector:
             username, password, REQUESTS_TIMEOUT)
         self.data = {}
 
-    def _fetch_data(self):
+    async def _fetch_data(self):
         """Fetch latest data from Jemena Outlook."""
         try:
-            self.client.fetch_data()
+            await self.client.fetch_data()
         except JemenaOutlookError as exp:
             _LOGGER.error("Error on receive last Jemena Outlook data: %s", exp)
             return
 
-    def get_data(self):
+    async def get_data(self):
         """Return the contract list."""
         # Fetch data
-        self._fetch_data()
+        await self._fetch_data()
         self.data = self.client.get_data()
         return self.data
 
     @Throttle(MIN_TIME_BETWEEN_UPDATES)
     async def async_update(self):
         """Return the latest collected data from Jemena Outlook."""
-        self._fetch_data()
+        await self._fetch_data()
         self.data = self.client.get_data()
 
 
@@ -57,158 +57,125 @@ class JemenaOutlookClient(object):
         self._session = None
 
 
-    def _get_login_page(self):
+    async def _get_login_page(self, session):
         """Go to the login page."""
-        try:
-            raw_res = self._session.get(HOME_URL, timeout=REQUESTS_TIMEOUT)
+        async with session.get(HOME_URL, timeout=REQUESTS_TIMEOUT) as raw_res:
+            # Get login url
+            soup = BeautifulSoup(await raw_res.text(), 'html.parser')
 
-        except OSError:
-            raise JemenaOutlookError("Can not connect to login page")
+            form_node = soup.find('form', {'id': 'loginForm'})
+            if form_node is None:
+                raise JemenaOutlookError("No login form found")
 
-        # Get login url
-        soup = BeautifulSoup(raw_res.content, 'html.parser')
+            login_url = form_node.attrs.get('action')
+            if login_url is None:
+                raise JemenaOutlookError("Cannot find login url")
 
-        form_node = soup.find('form', {'id': 'loginForm'})
-        if form_node is None:
-            raise JemenaOutlookError("No login form found")
-
-        login_url = form_node.attrs.get('action')
-        if login_url is None:
-            raise JemenaOutlookError("Cannot find login url")
-
-        return login_url
+            return login_url
 
 
-    def _post_login_page(self, login_url):
+    async def _post_login_page(self, session, login_url):
         """Login to Jemena Electricity Outlook website."""
         form_data = {"login_email": self.username,
                 "login_password": self.password,
                 "submit": "Sign In"}
-        try:
-            raw_res = self._session.post('{}/login_security_check'.format(HOST),
+        async with session.post('{}/login_security_check'.format(HOST),
                                     data = form_data,
-                                    timeout = REQUESTS_TIMEOUT)
-
-        except OSError as e:
-            raise JemenaOutlookError("Cannot submit login form {0}".format(e.errno))
-        
-        if raw_res.status_code != 200:
-            raise JemenaOutlookError("Login error: Bad HTTP status code. {}".format(raw_res.status_code))
-
-        return True
+                                    timeout = REQUESTS_TIMEOUT) as raw_res:
+            status_code = raw_res.status 
+            if status_code != 200:
+                raise JemenaOutlookError("Login error: Bad HTTP status code. {}".format(status_code))
+            return True
 
     
-    def _get_tariffs(self):
+    async def _get_tariffs(self, session):
         """Get tariff data. This data must be setup by the user first and is not automatically available."""
+        url = '{}/electricityView/index'.format(HOST)
+        async with session.get(url, timeout=REQUESTS_TIMEOUT) as raw_res:
+            # Get login url
+            soup = BeautifulSoup(await raw_res.text(), 'html.parser')
+            tariff_script = soup.find('script', text=re.compile('var tariff = '))
 
-        try:
-            url = '{}/electricityView/index'.format(HOST)
-            raw_res = self._session.get(url, timeout=REQUESTS_TIMEOUT)
-
-        except OSError:
-            raise JemenaOutlookError("Can not connect to login page")
-
-        # Get login url
-        soup = BeautifulSoup(raw_res.content, 'html.parser')
-        tariff_script = soup.find('script', text=re.compile('var tariff = '))
-
-        if tariff_script is not None:
+            if tariff_script is not None:
+                
+                json_text = re.search(r'^\s*var tariff =\s*({.*?})\s*;\s*$', tariff_script.string, flags=re.DOTALL | re.MULTILINE).group(1)
+                data = json.loads(json_text)
             
-            json_text = re.search(r'^\s*var tariff =\s*({.*?})\s*;\s*$', tariff_script.string, flags=re.DOTALL | re.MULTILINE).group(1)
-            data = json.loads(json_text)
-        
-            tariff_data = {
-                "supply_charge": self._strip_currency(data["supplyCharge"]),
-                "weekday_peak_cost": self._strip_currency(data["weekdayPeakCost"]),
-                "weekday_offpeak_cost": self._strip_currency(data["weekdayOffpeakCost"]),
-                "weekday_shoulder_cost": self._strip_currency(data["weekdayShoulderCost"]),
-                "controlled_load_cost": self._strip_currency(data["controlledLoadCost"]),
-                "weekend_offpeak_cost": self._strip_currency(data["weekendOffpeakCost"]),            
-                "single_rate_cost": self._strip_currency(data["singleRateCost"]),
-                "generation_cost": self._strip_currency(data["generationCost"]),
-                }
+                tariff_data = {
+                    "supply_charge": self._strip_currency(data["supplyCharge"]),
+                    "weekday_peak_cost": self._strip_currency(data["weekdayPeakCost"]),
+                    "weekday_offpeak_cost": self._strip_currency(data["weekdayOffpeakCost"]),
+                    "weekday_shoulder_cost": self._strip_currency(data["weekdayShoulderCost"]),
+                    "controlled_load_cost": self._strip_currency(data["controlledLoadCost"]),
+                    "weekend_offpeak_cost": self._strip_currency(data["weekendOffpeakCost"]),            
+                    "single_rate_cost": self._strip_currency(data["singleRateCost"]),
+                    "generation_cost": self._strip_currency(data["generationCost"]),
+                    }
 
-        return tariff_data
+            return tariff_data
     
     
-    def _get_daily_data(self, days_ago):
+    async def _get_daily_data(self, session, days_ago):
         """Get daily data."""
+        url = '{}/{}/{}'.format(PERIOD_URL, 'day', days_ago)
+        async with session.get(url, timeout = REQUESTS_TIMEOUT) as raw_res:
+            try:
+                json_output = await raw_res.json()
+            except (OSError, json.decoder.JSONDecodeError):
+                raise JemenaOutlookError("Could not get daily data: {}".format(raw_res))
 
-        try:
-            #'{}/electricityView/period/day/1'.format(HOST)
-            url = '{}/{}/{}'.format(PERIOD_URL, 'day', days_ago)
-            raw_res = self._session.get(url, timeout = REQUESTS_TIMEOUT)
-        except OSError as e:
-            _LOGGER.debug("exception data {}".format(e.errstring))
-            raise JemenaOutlookError("Cannot get daily data")
-        try:
-            json_output = raw_res.json()
-        except (OSError, json.decoder.JSONDecodeError):
-            raise JemenaOutlookError("Could not get daily data: {}".format(raw_res))
+            if not json_output.get('selectedPeriod'):
+                raise JemenaOutlookError("Could not get daily data for selectedPeriod")
 
-        if not json_output.get('selectedPeriod'):
-            raise JemenaOutlookError("Could not get daily data for selectedPeriod")
+            _LOGGER.debug("Jemena outlook daily data: %s", json_output)
 
-        _LOGGER.debug("Jemena outlook daily data: %s", json_output)
+            daily_data = self._extract_period_data(json_output , 'yesterday', 'previous_day')
 
-        daily_data = self._extract_period_data(json_output , 'yesterday', 'previous_day')
-
-        return daily_data      
+            return daily_data      
 
 
 
-    def _get_weekly_data(self, weeks_ago):
+    async def _get_weekly_data(self, session, weeks_ago):
         """Get weekly data."""
+        #PERIOD_URL
+        url = '{}/{}/{}'.format(PERIOD_URL, 'week', weeks_ago)
+        async with session.get(url, timeout = REQUESTS_TIMEOUT) as raw_res:
+            try:
+                json_output = await raw_res.json()
 
-        try:
-            #PERIOD_URL
-            url = '{}/{}/{}'.format(PERIOD_URL, 'week', weeks_ago)
-            raw_res = self._session.get(url, timeout = REQUESTS_TIMEOUT)
+            except (OSError, json.decoder.JSONDecodeError):
+                raise JemenaOutlookError("Could not get weekly data: {}".format(raw_res))
 
-        except OSError as e:
-            _LOGGER.debug("exception data {}".format(e.errstring))
-            raise JemenaOutlookError("Cannot get daily data")
-        try:
-            json_output = raw_res.json()
+            if not json_output.get('selectedPeriod'):
+                raise JemenaOutlookError("Could not get weekly data for selectedPeriod")
 
-        except (OSError, json.decoder.JSONDecodeError):
-            raise JemenaOutlookError("Could not get daily data: {}".format(raw_res))
+            _LOGGER.debug("Jemena outlook weekly data: %s", json_output)
+            
+            weekly_data = self._extract_period_data(json_output, 'this_week', 'last_week')
 
-        if not json_output.get('selectedPeriod'):
-            raise JemenaOutlookError("Could not get daily data for selectedPeriod")
+            return weekly_data
 
-        _LOGGER.debug("Jemena outlook weekly data: %s", json_output)
+
+    async def _get_monthly_data(self, session, months_ago):
+        """Get Monthly data."""
+        #PERIOD_URL
+        url = '{}/{}/{}'.format(PERIOD_URL, 'month', months_ago)
+        async with session.get(url, timeout = REQUESTS_TIMEOUT) as raw_res:
         
-        weekly_data = self._extract_period_data(json_output, 'this_week', 'last_week')
+            try:
+                json_output = await raw_res.json()
 
-        return weekly_data
+            except (OSError, json.decoder.JSONDecodeError):
+                raise JemenaOutlookError("Could not get monthly data: {}".format(raw_res))
 
+            if not json_output.get('selectedPeriod'):
+                raise JemenaOutlookError("Could not get monthly data for selectedPeriod")
 
-    def _get_monthly_data(self, months_ago):
-        """Get weekly data."""
+            _LOGGER.debug("Jemena outlook monthly data: %s", json_output)
+            
+            monthly_data = self._extract_period_data(json_output, 'this_month', 'last_month')
 
-        try:
-            #PERIOD_URL
-            url = '{}/{}/{}'.format(PERIOD_URL, 'month', months_ago)
-            raw_res = self._session.get(url, timeout = REQUESTS_TIMEOUT)
-
-        except OSError as e:
-            _LOGGER.debug("exception data {}".format(e.errstring))
-            raise JemenaOutlookError("Cannot get daily data")
-        try:
-            json_output = raw_res.json()
-
-        except (OSError, json.decoder.JSONDecodeError):
-            raise JemenaOutlookError("Could not get daily data: {}".format(raw_res))
-
-        if not json_output.get('selectedPeriod'):
-            raise JemenaOutlookError("Could not get daily data for selectedPeriod")
-
-        _LOGGER.debug("Jemena outlook monthly data: %s", json_output)
-        
-        monthly_data = self._extract_period_data(json_output, 'this_month', 'last_month')
-
-        return monthly_data
+            return monthly_data
 
 
     def _extract_period_data(self, json_data, current, previous):
@@ -286,28 +253,27 @@ class JemenaOutlookClient(object):
         return locale.atof(amount.strip('$'))
 
 
-    def fetch_data(self):
+    async def fetch_data(self):
         """Get the latest data from Jemena Outlook."""
         
         # setup requests session
-        self._session = requests.Session()
+        async with aiohttp.ClientSession() as session:
+            # Get login page
+            login_url = await self._get_login_page(session)
+            
+            # Post login page
+            await self._post_login_page(session, login_url)
 
-        # Get login page
-        login_url = self._get_login_page()
-        
-        # Post login page
-        self._post_login_page(login_url)
+            # self._data.update(await self._get_tariffs(session))
 
-        self._data.update(self._get_tariffs())
+            # Get Daily Usage data
+            self._data.update(await self._get_daily_data(session, 1))
 
-        # Get Daily Usage data
-        self._data.update(self._get_daily_data(1))
+            # Get Daily Usage data
+            self._data.update(await self._get_weekly_data(session, 0))
 
-        # Get Daily Usage data
-        self._data.update(self._get_weekly_data(0))
-
-        # Get Daily Usage data
-        self._data.update(self._get_monthly_data(0))
+            # Get Daily Usage data
+            self._data.update(await self._get_monthly_data(session, 0))
 
 
     def get_data(self):
