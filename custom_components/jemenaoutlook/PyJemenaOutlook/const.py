@@ -2,6 +2,7 @@ from datetime import timedelta
 
 HOST = 'https://electricityoutlook.jemena.com.au'
 HOME_URL = '{}/login/index'.format(HOST)
+LANDING_PAGE_URL = '{}/electricityView/index'.format(HOST)
 PERIOD_URL = ('{}/electricityView/period'.format(HOST))
 LATEST_DATA_URL = '{}/electricityView/latestData'.format(HOST)
 IS_UPDATED_URL = '{}/electricityView/isElectricityDataUpdated'.format(HOST)

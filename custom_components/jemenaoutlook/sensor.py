@@ -9,13 +9,10 @@ https://github.com/mvandersteen/ha-jemenaoutlook
 """
 from . import JemenaOutlookDataUpdateCoordinator
 
-from homeassistant.const import (
-    CONF_NAME, CONF_MONITORED_VARIABLES)
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity
 )
-import homeassistant.helpers.config_validation as cv
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -27,6 +24,7 @@ from .const import (
     COLLECTOR,
     COORDINATOR,
     DOMAIN,
+    KILOWATT_HOUR,
     SENSOR_TYPES
 )
 
@@ -66,8 +64,9 @@ class JemenaOutlookSensor(CoordinatorEntity[JemenaOutlookDataUpdateCoordinator],
         self._icon = SENSOR_TYPES[sensor_type][2]
         self.coordinator: JemenaOutlookDataUpdateCoordinator = hass_data[COORDINATOR]
         self._state = None
-        self.device_class = SensorDeviceClass.ENERGY
         self._state_class = SENSOR_TYPES[sensor_type][3]
+        if self._unit_of_measurement == KILOWATT_HOUR:
+            self.device_class = SensorDeviceClass.ENERGY
                 
     async def async_added_to_hass(self) -> None:
         """Set up a listener and load data."""

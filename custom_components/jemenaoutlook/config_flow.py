@@ -1,11 +1,9 @@
 """Config flow for Jemena Outlook."""
 import logging
 
-import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
-from homeassistant import config_entries, exceptions
-from homeassistant.const import CONF_LATITUDE, CONF_LONGITUDE
-from homeassistant.core import HomeAssistant, callback
+from homeassistant import config_entries
+from homeassistant.core import callback
 from homeassistant.const import (
     CONF_USERNAME, CONF_PASSWORD)
 from homeassistant.helpers.selector import (

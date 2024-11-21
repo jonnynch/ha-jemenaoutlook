@@ -7,7 +7,7 @@ import aiohttp
 from homeassistant.util import Throttle
 
 from .const import (
-    HOST, HOME_URL, PERIOD_URL, LATEST_DATA_URL, IS_UPDATED_URL, REQUESTS_TIMEOUT, MIN_TIME_BETWEEN_UPDATES
+    HOST, HOME_URL, LANDING_PAGE_URL, PERIOD_URL, LATEST_DATA_URL, IS_UPDATED_URL, REQUESTS_TIMEOUT, MIN_TIME_BETWEEN_UPDATES
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -79,6 +79,7 @@ class JemenaOutlookClient(object):
         form_data = {"login_email": self.username,
                 "login_password": self.password,
                 "submit": "Sign In"}
+        _LOGGER.debug("login_url: %s", login_url)
         async with session.post('{}/login_security_check'.format(HOST),
                                     data = form_data,
                                     timeout = REQUESTS_TIMEOUT) as raw_res:
@@ -90,8 +91,8 @@ class JemenaOutlookClient(object):
     
     async def _get_tariffs(self, session):
         """Get tariff data. This data must be setup by the user first and is not automatically available."""
-        url = '{}/electricityView/index'.format(HOST)
-        async with session.get(url, timeout=REQUESTS_TIMEOUT) as raw_res:
+        
+        async with session.get(LANDING_PAGE_URL, timeout=REQUESTS_TIMEOUT) as raw_res:
             # Get login url
             soup = BeautifulSoup(await raw_res.text(), 'html.parser')
             tariff_script = soup.find('script', text=re.compile('var tariff = '))
@@ -120,16 +121,17 @@ class JemenaOutlookClient(object):
             try:
                 json_output = await raw_res.json()
             except (OSError, json.decoder.JSONDecodeError):
-                raise JemenaOutlookError("Could not get daily data: {}".format(raw_res))
-
-            if json_output.get('poll'):
-                raise JemenaOutlookError("Could not get daily data for selectedPeriod")
+                raise JemenaOutlookError("Could not check latest data: {}".format(raw_res))
 
             _LOGGER.debug("json_output: %s", json_output)
+            if json_output.get('poll'):
 
-            url = '{}?{}={}'.format(IS_UPDATED_URL, 'lastKnownInterval', lastKnownInterval)
-            async with session.get(url, timeout = REQUESTS_TIMEOUT) as raw_res2:
-                _LOGGER.debug("raw_res2: %s", await raw_res2.text())
+                url = '{}?{}={}'.format(IS_UPDATED_URL, 'lastKnownInterval', lastKnownInterval)
+                async with session.get(url, timeout = REQUESTS_TIMEOUT) as raw_res2:
+                    _LOGGER.debug("raw_res2: %s", await raw_res2.text())
+                
+                return True
+        return False
             
 
             
@@ -286,19 +288,26 @@ class JemenaOutlookClient(object):
             # Post login page
             await self._post_login_page(session, login_url)
 
-            # self._data.update(await self._get_tariffs(session))
+            self._data.update(await self._get_tariffs(session))
 
+            poll = True
+            _LOGGER.debug("latestInterval: %s", self._data.get("latestInterval"))
+            
             if self._data.get("latestInterval"):
-                await self._refresh(session, self._data.get("latestInterval"))
+                _LOGGER.debug("Do Refresh")
+                poll = await self._refresh(session, self._data.get("latestInterval"))
+            
+            _LOGGER.debug("poll: %s", poll)
 
-            # Get Daily Usage data
-            self._data.update(await self._get_daily_data(session, 1))
+            if poll:
+                # Get Daily Usage data
+                self._data.update(await self._get_daily_data(session, 1))
 
-            # Get Daily Usage data
-            self._data.update(await self._get_weekly_data(session, 0))
+                # Get Daily Usage data
+                self._data.update(await self._get_weekly_data(session, 0))
 
-            # Get Daily Usage data
-            self._data.update(await self._get_monthly_data(session, 0))
+                # Get Daily Usage data
+                self._data.update(await self._get_monthly_data(session, 0))
 
 
     def get_data(self):
