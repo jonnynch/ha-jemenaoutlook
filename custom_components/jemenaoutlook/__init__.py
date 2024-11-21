@@ -25,12 +25,12 @@ DEBOUNCE_TIME = 60  # in seconds
 
 """The Jemena Outlook integration."""
 async def async_setup(hass: HomeAssistant, config: dict):
-    """Set up the BOM component."""
+    """Set up the Jemena Outlook component."""
     hass.data.setdefault(DOMAIN, {})
     return True
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up BOM from a config entry."""
+    """Set up Jemena Outlook from a config entry."""
     collector = Collector(entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD])
 
     try:

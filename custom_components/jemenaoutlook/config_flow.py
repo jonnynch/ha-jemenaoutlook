@@ -1,4 +1,4 @@
-"""Config flow for BOM."""
+"""Config flow for Jemena Outlook."""
 import logging
 
 import homeassistant.helpers.config_validation as cv
@@ -22,7 +22,7 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for BOM."""
+    """Handle a config flow for Jemena Outlook."""
 
     VERSION = 2
     CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
@@ -97,7 +97,9 @@ class JemenaOutlookOptionsFlow(config_entries.OptionsFlow):
                             CONF_USERNAME
                         ),
                     ),
-                ): float,
+                ): TextSelector(
+                    TextSelectorConfig(type=TextSelectorType.EMAIL)
+                ),
                 vol.Required(
                     CONF_PASSWORD,
                     default=self.config_entry.options.get(
@@ -106,7 +108,11 @@ class JemenaOutlookOptionsFlow(config_entries.OptionsFlow):
                             CONF_PASSWORD
                         ),
                     ),
-                ): float,
+                ): TextSelector(
+                    TextSelectorConfig(
+                        type=TextSelectorType.PASSWORD
+                    )
+                ),
             }
         )
 

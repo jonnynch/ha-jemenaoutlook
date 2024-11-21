@@ -1,4 +1,4 @@
-"""BOM data 'collector' that downloads the observation data."""
+"""Jemena Outlook data 'collector' that downloads the utilization data."""
 import logging
 from bs4 import BeautifulSoup
 import json
@@ -7,13 +7,13 @@ import aiohttp
 from homeassistant.util import Throttle
 
 from .const import (
-    HOST, HOME_URL, PERIOD_URL, REQUESTS_TIMEOUT, MIN_TIME_BETWEEN_UPDATES
+    HOST, HOME_URL, PERIOD_URL, LATEST_DATA_URL, IS_UPDATED_URL, REQUESTS_TIMEOUT, MIN_TIME_BETWEEN_UPDATES
 )
 
 _LOGGER = logging.getLogger(__name__)
 
 class Collector:
-    """Collector for PyBoM."""
+    """Collector for PyJemenaOutlook."""
 
     def __init__(self, username, password):
         """Init collector."""
@@ -114,7 +114,25 @@ class JemenaOutlookClient(object):
 
             return tariff_data
     
-    
+    async def _refresh(self, session, lastKnownInterval):
+        url = '{}?{}={}'.format(LATEST_DATA_URL, 'lastKnownInterval', lastKnownInterval)
+        async with session.get(url, timeout = REQUESTS_TIMEOUT) as raw_res:
+            try:
+                json_output = await raw_res.json()
+            except (OSError, json.decoder.JSONDecodeError):
+                raise JemenaOutlookError("Could not get daily data: {}".format(raw_res))
+
+            if json_output.get('poll'):
+                raise JemenaOutlookError("Could not get daily data for selectedPeriod")
+
+            _LOGGER.debug("json_output: %s", json_output)
+
+            url = '{}?{}={}'.format(IS_UPDATED_URL, 'lastKnownInterval', lastKnownInterval)
+            async with session.get(url, timeout = REQUESTS_TIMEOUT) as raw_res2:
+                _LOGGER.debug("raw_res2: %s", await raw_res2.text())
+            
+
+            
     async def _get_daily_data(self, session, days_ago):
         """Get daily data."""
         url = '{}/{}/{}'.format(PERIOD_URL, 'day', days_ago)
@@ -213,6 +231,8 @@ class JemenaOutlookClient(object):
         previousPeriodGeneration = self._sum_period_array(previousPeriod['consumptionData']['generation'], 3)
         previousPeriodSuburbAverage = self._sum_period_array(previousPeriod['consumptionData']['suburbAverage'], 3)
 
+        latestInterval = json_data.get('latestInterval')
+
         period_data = {
             current + "_user_type": "consumer" if netConsumption > 0 else "generator",
             current + "_usage": netConsumption,
@@ -235,7 +255,9 @@ class JemenaOutlookClient(object):
 
             previous + "_usage": round(previousPeriodPeakConsumption + previousPeriodOffPeakConsumption + previousPeriodShoulderConsumption + previousPeriodControlledLoadConsumption - previousPeriodGeneration, 3),
             previous + "_consumption": round(previousPeriodPeakConsumption + previousPeriodOffPeakConsumption + previousPeriodShoulderConsumption + previousPeriodControlledLoadConsumption, 3),
-            previous + "_generation": previousPeriodGeneration
+            previous + "_generation": previousPeriodGeneration,
+
+            "latestInterval": latestInterval
             }
         return period_data
 
@@ -265,6 +287,9 @@ class JemenaOutlookClient(object):
             await self._post_login_page(session, login_url)
 
             # self._data.update(await self._get_tariffs(session))
+
+            if self._data.get("latestInterval"):
+                await self._refresh(session, self._data.get("latestInterval"))
 
             # Get Daily Usage data
             self._data.update(await self._get_daily_data(session, 1))
