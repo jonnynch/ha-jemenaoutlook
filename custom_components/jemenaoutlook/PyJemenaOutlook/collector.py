@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import json
 import re
 import aiohttp
+from custom_components.jemenaoutlook.const import CONF_COST, CONF_DAILY, CONF_MONTHLY, CONF_TODAY, CONF_WEEKLY
 from homeassistant.util import Throttle
 
 from .const import (
@@ -15,10 +16,10 @@ _LOGGER = logging.getLogger(__name__)
 class Collector:
     """Collector for PyJemenaOutlook."""
 
-    def __init__(self, username, password):
+    def __init__(self, username, password, options):
         """Init collector."""
         self.client = JemenaOutlookClient(
-            username, password, REQUESTS_TIMEOUT)
+            username, password, options, REQUESTS_TIMEOUT)
         self.data = {}
 
     async def _fetch_data(self):
@@ -48,11 +49,12 @@ class JemenaOutlookError(Exception):
 
 class JemenaOutlookClient(object):
 
-    def __init__(self, username, password, timeout=REQUESTS_TIMEOUT):
+    def __init__(self, username, password, options, timeout=REQUESTS_TIMEOUT):
         """Initialize the client object."""
         self.username = username
         self.password = password
         self._data = {}
+        self.options = options
         self._timeout = timeout
         self._session = None
 
@@ -135,7 +137,7 @@ class JemenaOutlookClient(object):
             
 
             
-    async def _get_daily_data(self, session, days_ago):
+    async def _get_daily_data(self, session, days_ago, current, previous):
         """Get daily data."""
         url = '{}/{}/{}'.format(PERIOD_URL, 'day', days_ago)
         async with session.get(url, timeout = REQUESTS_TIMEOUT) as raw_res:
@@ -149,7 +151,7 @@ class JemenaOutlookClient(object):
 
             _LOGGER.debug("Jemena outlook daily data: %s", json_output)
 
-            daily_data = self._extract_period_data(json_output , 'yesterday', 'previous_day')
+            daily_data = self._extract_period_data(json_output , current, previous)
 
             return daily_data      
 
@@ -235,31 +237,55 @@ class JemenaOutlookClient(object):
 
         latestInterval = json_data.get('latestInterval')
 
-        period_data = {
-            current + "_user_type": "consumer" if netConsumption > 0 else "generator",
-            current + "_usage": netConsumption,
-            current + "_average_net_usage_per_sub_period": averageNetConsumptionPerSubPeriod,
-            current + "_consumption": round(peakConsumption + offPeakConsumption + shoulderConsumption + controlledLoadConsumption, 3),
-            current + "_consumption_peak": peakConsumption,
-            current + "_consumption_offpeak": offPeakConsumption,
-            current + "_consumption_shoulder": shoulderConsumption,
-            current + "_consumption_controlled_load": controlledLoadConsumption,
-            current + "_generation": generation,
-            current + "_cost_total": round(costDataPeak + costDataOffPeak + costDataShoulder + costDataControlledLoad + costDataGeneration, 2),
-            current + "_cost_consumption": round(costDataPeak + costDataOffPeak + costDataShoulder + costDataControlledLoad, 2),
-            current + "_cost_generation": abs(costDataGeneration),
-            current + "_suburb_average": suburbAverage,
-            current + "_cost_difference": costDifference,
-            current + "_difference_message": costDifferenceMessage['text'],
-            current + "_percentage_difference": kwhPercentageDifference,
-            current + "_consumption_difference": round(netConsumption - previousPeriodNetConsumption, 3),
-            current + "_consumption_change": costDifferenceMessage['change'],
+        if previous:
+            period_data = {
+                current + "_user_type": "consumer" if netConsumption > 0 else "generator",
+                current + "_usage": netConsumption,
+                current + "_average_net_usage_per_sub_period": averageNetConsumptionPerSubPeriod,
+                current + "_consumption": round(peakConsumption + offPeakConsumption + shoulderConsumption + controlledLoadConsumption, 3),
+                current + "_consumption_peak": peakConsumption,
+                current + "_consumption_offpeak": offPeakConsumption,
+                current + "_consumption_shoulder": shoulderConsumption,
+                current + "_consumption_controlled_load": controlledLoadConsumption,
+                current + "_generation": generation,
+                current + "_cost_total": round(costDataPeak + costDataOffPeak + costDataShoulder + costDataControlledLoad + costDataGeneration, 2),
+                current + "_cost_consumption": round(costDataPeak + costDataOffPeak + costDataShoulder + costDataControlledLoad, 2),
+                current + "_cost_generation": abs(costDataGeneration),
+                current + "_suburb_average": suburbAverage,
+                current + "_cost_difference": costDifference,
+                current + "_difference_message": costDifferenceMessage['text'],
+                current + "_percentage_difference": kwhPercentageDifference,
+                current + "_consumption_difference": round(netConsumption - previousPeriodNetConsumption, 3),
+                current + "_consumption_change": costDifferenceMessage['change'],
+                
+                previous + "_usage": round(previousPeriodPeakConsumption + previousPeriodOffPeakConsumption + previousPeriodShoulderConsumption + previousPeriodControlledLoadConsumption - previousPeriodGeneration, 3),
+                previous + "_consumption": round(previousPeriodPeakConsumption + previousPeriodOffPeakConsumption + previousPeriodShoulderConsumption + previousPeriodControlledLoadConsumption, 3),
+                previous + "_generation": previousPeriodGeneration,
 
-            previous + "_usage": round(previousPeriodPeakConsumption + previousPeriodOffPeakConsumption + previousPeriodShoulderConsumption + previousPeriodControlledLoadConsumption - previousPeriodGeneration, 3),
-            previous + "_consumption": round(previousPeriodPeakConsumption + previousPeriodOffPeakConsumption + previousPeriodShoulderConsumption + previousPeriodControlledLoadConsumption, 3),
-            previous + "_generation": previousPeriodGeneration,
+                "latestInterval": latestInterval
+            }
+        else: 
+            period_data = {
+                current + "_user_type": "consumer" if netConsumption > 0 else "generator",
+                current + "_usage": netConsumption,
+                current + "_average_net_usage_per_sub_period": averageNetConsumptionPerSubPeriod,
+                current + "_consumption": round(peakConsumption + offPeakConsumption + shoulderConsumption + controlledLoadConsumption, 3),
+                current + "_consumption_peak": peakConsumption,
+                current + "_consumption_offpeak": offPeakConsumption,
+                current + "_consumption_shoulder": shoulderConsumption,
+                current + "_consumption_controlled_load": controlledLoadConsumption,
+                current + "_generation": generation,
+                current + "_cost_total": round(costDataPeak + costDataOffPeak + costDataShoulder + costDataControlledLoad + costDataGeneration, 2),
+                current + "_cost_consumption": round(costDataPeak + costDataOffPeak + costDataShoulder + costDataControlledLoad, 2),
+                current + "_cost_generation": abs(costDataGeneration),
+                current + "_suburb_average": suburbAverage,
+                current + "_cost_difference": costDifference,
+                current + "_difference_message": costDifferenceMessage['text'],
+                current + "_percentage_difference": kwhPercentageDifference,
+                current + "_consumption_difference": round(netConsumption - previousPeriodNetConsumption, 3),
+                current + "_consumption_change": costDifferenceMessage['change'],
 
-            "latestInterval": latestInterval
+                "latestInterval": latestInterval
             }
         return period_data
 
@@ -288,7 +314,8 @@ class JemenaOutlookClient(object):
             # Post login page
             await self._post_login_page(session, login_url)
 
-            self._data.update(await self._get_tariffs(session))
+            if self.options.get(CONF_COST):
+                self._data.update(await self._get_tariffs(session))
 
             poll = True
             _LOGGER.debug("latestInterval: %s", self._data.get("latestInterval"))
@@ -300,14 +327,21 @@ class JemenaOutlookClient(object):
             _LOGGER.debug("poll: %s", poll)
 
             if poll:
-                # Get Daily Usage data
-                self._data.update(await self._get_daily_data(session, 1))
+                # Get Today Usage data
+                if self.options.get(CONF_TODAY):
+                    self._data.update(await self._get_daily_data(session, 0, 'today', None))
 
                 # Get Daily Usage data
-                self._data.update(await self._get_weekly_data(session, 0))
+                if self.options.get(CONF_DAILY):
+                    self._data.update(await self._get_daily_data(session, 1, 'yesterday', 'previous_day'))
 
-                # Get Daily Usage data
-                self._data.update(await self._get_monthly_data(session, 0))
+                # Get Weekly Usage data
+                if self.options.get(CONF_WEEKLY):
+                    self._data.update(await self._get_weekly_data(session, 0))
+
+                # Get Monthly Usage data
+                if self.options.get(CONF_MONTHLY):
+                    self._data.update(await self._get_monthly_data(session, 0))
 
 
     def get_data(self):

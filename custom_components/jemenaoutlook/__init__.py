@@ -13,7 +13,7 @@ from homeassistant.helpers import debounce
 import logging
 
 from .const import (
-    DOMAIN, COLLECTOR, COORDINATOR, UPDATE_LISTENER
+    CONF_COST, CONF_DAILY, CONF_MONTHLY, CONF_TODAY, CONF_WEEKLY, DOMAIN, COLLECTOR, COORDINATOR, UPDATE_LISTENER
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -31,7 +31,14 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Jemena Outlook from a config entry."""
-    collector = Collector(entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD])
+    collector = Collector(entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD]
+                          ,options = {
+                            CONF_COST: entry.data.get(CONF_COST,True),
+                            CONF_TODAY: entry.data.get(CONF_TODAY,True),
+                            CONF_DAILY: entry.data.get(CONF_DAILY,True),
+                            CONF_WEEKLY: entry.data.get(CONF_WEEKLY,True),
+                            CONF_MONTHLY: entry.data.get(CONF_MONTHLY,True),
+                        })
 
     try:
         await collector.async_update()

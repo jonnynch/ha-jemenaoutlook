@@ -12,6 +12,11 @@ from homeassistant.helpers.selector import (
     TextSelectorType,
 )
 from .const import (
+    CONF_COST,
+    CONF_DAILY,
+    CONF_MONTHLY,
+    CONF_TODAY,
+    CONF_WEEKLY,
     DOMAIN
 )
 from .PyJemenaOutlook.collector import Collector
@@ -44,6 +49,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         type=TextSelectorType.PASSWORD
                     )
                 ),
+                vol.Required(CONF_COST, default=True): bool,
+                vol.Required(CONF_TODAY, default=True): bool,
+                vol.Required(CONF_DAILY, default=True): bool,
+                vol.Required(CONF_WEEKLY, default=True): bool,
+                vol.Required(CONF_MONTHLY, default=True): bool,
             }
         )
 
@@ -54,6 +64,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self.collector = Collector(
                     user_input[CONF_USERNAME],
                     user_input[CONF_PASSWORD],
+                    options = {
+                        CONF_COST: user_input[CONF_COST],
+                        CONF_TODAY: user_input[CONF_TODAY],
+                        CONF_DAILY: user_input[CONF_DAILY],
+                        CONF_WEEKLY: user_input[CONF_WEEKLY],
+                        CONF_MONTHLY: user_input[CONF_MONTHLY],
+                    }
                 )
 
                 # Save the user input into self.data so it's retained
@@ -111,6 +128,36 @@ class JemenaOutlookOptionsFlow(config_entries.OptionsFlow):
                         type=TextSelectorType.PASSWORD
                     )
                 ),
+                vol.Required(CONF_COST, default=self.config_entry.options.get(
+                        CONF_COST,
+                        self.config_entry.data.get(
+                            CONF_COST
+                        ),
+                    ),): bool,
+                vol.Required(CONF_TODAY, default=self.config_entry.options.get(
+                        CONF_TODAY,
+                        self.config_entry.data.get(
+                            CONF_TODAY
+                        ),
+                    ),): bool,
+                vol.Required(CONF_DAILY, default=self.config_entry.options.get(
+                        CONF_DAILY,
+                        self.config_entry.data.get(
+                            CONF_DAILY
+                        ),
+                    ),): bool,
+                vol.Required(CONF_WEEKLY, default=self.config_entry.options.get(
+                        CONF_WEEKLY,
+                        self.config_entry.data.get(
+                            CONF_WEEKLY
+                        ),
+                    ),): bool,
+                vol.Required(CONF_MONTHLY, default=self.config_entry.options.get(
+                        CONF_MONTHLY,
+                        self.config_entry.data.get(
+                            CONF_MONTHLY
+                        ),
+                    ),): bool,
             }
         )
 
@@ -121,6 +168,13 @@ class JemenaOutlookOptionsFlow(config_entries.OptionsFlow):
                 self.collector = Collector(
                     user_input[CONF_USERNAME],
                     user_input[CONF_PASSWORD],
+                    options = {
+                        CONF_COST: user_input[CONF_COST],
+                        CONF_TODAY: user_input[CONF_TODAY],
+                        CONF_DAILY: user_input[CONF_DAILY],
+                        CONF_WEEKLY: user_input[CONF_WEEKLY],
+                        CONF_MONTHLY: user_input[CONF_MONTHLY],
+                    }
                 )
 
                 # Save the user input into self.data so it's retained
