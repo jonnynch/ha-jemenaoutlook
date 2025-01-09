@@ -35,7 +35,7 @@ For me this is :-
 Or just use git to clone into a jemenaoutlook directory, when using this method make sure the user home-assistant is running as can read these files.
 ```
 cd <homeassistant-user-configuration-directory>/custom_components
-git clone https://github.com/mvandersteen/ha-jemenaoutlook.git
+git clone https://github.com/jonnynch/ha-jemenaoutlook.git
 ln -s  ha-jemenaoutlook/custom_components/jemenaoutlook jemenaoutlook
 ```
 
