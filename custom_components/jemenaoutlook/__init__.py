@@ -31,7 +31,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Jemena Outlook from a config entry."""
-    collector = Collector(entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD]
+    collector = Collector(hass, entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD]
                           ,options = {
                             CONF_COST: entry.data.get(CONF_COST,True),
                             CONF_TODAY: entry.data.get(CONF_TODAY,True),

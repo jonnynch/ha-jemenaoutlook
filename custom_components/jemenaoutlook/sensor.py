@@ -27,7 +27,8 @@ from .const import (
     KILOWATT_HOUR,
     SENSOR_TYPES
 )
-
+import logging
+_LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -42,7 +43,7 @@ async def async_setup_entry(
 
     sensors = []
     for key in SENSOR_TYPES.keys():
-        sensors.append(JemenaOutlookSensor(hass_data, key, name))
+        sensors.append(JemenaOutlookSensor(hass, hass_data, key, name))
 
     async_add_entities(sensors)
 
@@ -51,9 +52,10 @@ async def async_setup_entry(
 class JemenaOutlookSensor(CoordinatorEntity[JemenaOutlookDataUpdateCoordinator], SensorEntity):
     """Implementation of a Jemena Outlook sensor."""
 
-    def __init__(self, hass_data, sensor_type, name):
+    def __init__(self, hass, hass_data, sensor_type, name):
         """Initialize the sensor."""
         super().__init__(hass_data[COORDINATOR])
+        self._hass = hass
         self.collector: Collector = hass_data[COLLECTOR]
         self.coordinator: JemenaOutlookDataUpdateCoordinator = hass_data[COORDINATOR]
         self.client_name = name
@@ -62,7 +64,6 @@ class JemenaOutlookSensor(CoordinatorEntity[JemenaOutlookDataUpdateCoordinator],
         self._name = SENSOR_TYPES[sensor_type][0]
         self._unit_of_measurement = SENSOR_TYPES[sensor_type][1]
         self._icon = SENSOR_TYPES[sensor_type][2]
-        self.coordinator: JemenaOutlookDataUpdateCoordinator = hass_data[COORDINATOR]
         self._state = None
         self._state_class = SENSOR_TYPES[sensor_type][3]
         if self._unit_of_measurement == KILOWATT_HOUR:
@@ -84,8 +85,10 @@ class JemenaOutlookSensor(CoordinatorEntity[JemenaOutlookDataUpdateCoordinator],
         return False
 
     async def async_update(self):
+        _LOGGER.info("async_update")
         """Refresh the data on the collector object."""
         await self.collector.async_update()
+        
 
     @property
     def name(self):
@@ -119,16 +122,6 @@ class JemenaOutlookSensor(CoordinatorEntity[JemenaOutlookDataUpdateCoordinator],
     def icon(self):
         """Icon to use in the frontend, if any."""
         return self._icon
-
-    def update(self):
-        """Get the latest data from Jemena Outlook and update the state."""
-        self.jemenaoutlook_data.update()
-
-        if self.type in self.jemenaoutlook_data.data is not None:
-            if type(self.jemenaoutlook_data.data[self.type]) == type(''):
-                self._state = self.jemenaoutlook_data.data[self.type]
-            else:
-                self._state = round(self.jemenaoutlook_data.data[self.type], 2)
 
 
 

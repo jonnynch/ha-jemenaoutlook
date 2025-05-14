@@ -27,6 +27,9 @@ CONF_MONTHLY = "CONF_MONTHLY"
 SCAN_INTERVAL = timedelta(hours=1)
 
 SENSOR_TYPES = {
+    'consumptionUsage': ['Consumption Usage', KILOWATT_HOUR, 'mdi:flash', SensorStateClass.TOTAL]
+}
+SENSOR_TYPES_OLD = {
     'today_user_type': ['Today user type', None, 'mdi:home-account', None],
     'today_usage': ['Today usage', KILOWATT_HOUR, 'mdi:flash', SensorStateClass.TOTAL],
     'today_consumption': ['Today consumption', KILOWATT_HOUR, 'mdi:flash', SensorStateClass.TOTAL],
