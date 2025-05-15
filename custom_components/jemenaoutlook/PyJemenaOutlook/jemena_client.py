@@ -3,7 +3,7 @@ import logging
 import aiohttp
 import asyncio
 from .const import BOOTSTRAP_URL, FIELDS, JEMENA_APIKEY, PROPERTIES_URL,REQUESTS_TIMEOUT, CONF_DAILY,GIGYA_APIKEY, CONSUMPTION_URL, LOGIN_URL,JWT_URL
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 from tzlocal import get_localzone
 

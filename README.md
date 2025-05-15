@@ -1,8 +1,5 @@
 ﻿# ha-jemenaoutlook
-
-Unfortunately, jemena has replaced the portal and the new portal is slow and have huge delay of data comparing to the old one.
-
-I will not be able to point this integration to the new portal until the data delay is reduced to nearly realtime, or home assistant is able to enter the past statistics with more reliable way.
+New approach has been taken, using async_add_external_statistics from reorder directly 
 
 Hope we can have this integration back in the future.
 
