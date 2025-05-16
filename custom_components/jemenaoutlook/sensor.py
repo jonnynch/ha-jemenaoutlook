@@ -103,8 +103,8 @@ class JemenaOutlookSensor(CoordinatorEntity[JemenaOutlookDataUpdateCoordinator],
     @property
     def state(self):
         """Return the state of the sensor."""
-        if type(self.collector.data[self.type]) == type(''):
-            return self.collector.data[self.type]
+        if self.collector.data.get(self.type, None) == None:
+            return None
         else:
             return round(self.collector.data[self.type], 2)
 
