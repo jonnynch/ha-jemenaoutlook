@@ -58,26 +58,28 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
         errors = {}
+        _LOGGER.info("user_input %s", user_input)
         if user_input is not None:
             try:
-                # Create the collector object with the given long. and lat.
-                self.collector = Collector(
-                    user_input[CONF_USERNAME],
-                    user_input[CONF_PASSWORD],
-                    options = {
-                        CONF_COST: user_input[CONF_COST],
-                        CONF_TODAY: user_input[CONF_TODAY],
-                        CONF_DAILY: user_input[CONF_DAILY],
-                        CONF_WEEKLY: user_input[CONF_WEEKLY],
-                        CONF_MONTHLY: user_input[CONF_MONTHLY],
-                    }
-                )
+        #         # Create the collector object with the given long. and lat.
+        #         self.collector = Collector(
+        #             haas,
+        #             user_input[CONF_USERNAME],
+        #             user_input[CONF_PASSWORD],
+        #             options = {
+        #                 CONF_COST: user_input[CONF_COST],
+        #                 CONF_TODAY: user_input[CONF_TODAY],
+        #                 CONF_DAILY: user_input[CONF_DAILY],
+        #                 CONF_WEEKLY: user_input[CONF_WEEKLY],
+        #                 CONF_MONTHLY: user_input[CONF_MONTHLY],
+        #             }
+        #         )
 
                 # Save the user input into self.data so it's retained
                 self.data = user_input
                 
-                # Populate observations and daily forecasts data
-                await self.collector.async_update()
+        #         # Populate observations and daily forecasts data
+        #         await self.collector.async_update()
                 return self.async_create_entry(
                         title=DOMAIN,
                         data=self.data,
@@ -165,23 +167,23 @@ class JemenaOutlookOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             try:
                 # Create the collector object with the given long. and lat.
-                self.collector = Collector(
-                    user_input[CONF_USERNAME],
-                    user_input[CONF_PASSWORD],
-                    options = {
-                        CONF_COST: user_input[CONF_COST],
-                        CONF_TODAY: user_input[CONF_TODAY],
-                        CONF_DAILY: user_input[CONF_DAILY],
-                        CONF_WEEKLY: user_input[CONF_WEEKLY],
-                        CONF_MONTHLY: user_input[CONF_MONTHLY],
-                    }
-                )
+                # self.collector = Collector(
+                #     user_input[CONF_USERNAME],
+                #     user_input[CONF_PASSWORD],
+                #     options = {
+                #         CONF_COST: user_input[CONF_COST],
+                #         CONF_TODAY: user_input[CONF_TODAY],
+                #         CONF_DAILY: user_input[CONF_DAILY],
+                #         CONF_WEEKLY: user_input[CONF_WEEKLY],
+                #         CONF_MONTHLY: user_input[CONF_MONTHLY],
+                #     }
+                # )
 
                 # Save the user input into self.data so it's retained
                 self.data = user_input
                 
-                # Populate observations and daily forecasts data
-                await self.collector.async_update()
+                # # Populate observations and daily forecasts data
+                # await self.collector.async_update()
 
                 return self.async_create_entry(
                         title=DOMAIN,

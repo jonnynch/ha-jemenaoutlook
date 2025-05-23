@@ -30,3 +30,6 @@ Please make sure custom_components/jemenaoutlook/sensor.py exists.
 ## Configuring the sensor
 
 It is now UI configured. After installing the component, you can add it via Home Assistant.
+
+## Integrate with Energy Dashboard
+Add "jemenaoutlook:consumption_usage" into the Grid consumption of Electricity grid
