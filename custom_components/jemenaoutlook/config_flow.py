@@ -58,7 +58,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
 
         errors = {}
-        _LOGGER.info("user_input %s", user_input)
         if user_input is not None:
             try:
         #         # Create the collector object with the given long. and lat.
