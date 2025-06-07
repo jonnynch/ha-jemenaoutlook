@@ -33,3 +33,4 @@ It is now UI configured. After installing the component, you can add it via Home
 
 ## Integrate with Energy Dashboard
 Add "jemenaoutlook:consumption_usage" into the Grid consumption of Electricity grid
+Add "jemenaoutlook:generation" into the Return to grid of Electricity grid (If any)
