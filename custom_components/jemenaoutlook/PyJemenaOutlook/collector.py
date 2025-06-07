@@ -41,7 +41,9 @@ class Collector:
             statistic_id = f"{DOMAIN}:{SENSOR_TYPES[field][0]}".replace(" ","_").lower()
             try:
                 raw_data =  self.client.get_raw_data()
-
+                if len(raw_data[field]) == 0:
+                    _LOGGER.debug("len(raw_data[%s]) == 0 --> skip",field)
+                    continue
                 statistics = []
                 sums = await self.get_last_sum(statistic_id, raw_data[field][0]["from"], SENSOR_TYPES[field][1])
                 if sums == 0:

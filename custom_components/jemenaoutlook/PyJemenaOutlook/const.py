@@ -20,6 +20,6 @@ CONF_MONTHLY = "CONF_MONTHLY"
 
 MIN_TIME_BETWEEN_UPDATES = timedelta(hours=1)
 
-FIELDS = ["consumptionUsage","postCodeAverage"]
+FIELDS = ["consumptionUsage","postCodeAverage","generation"]
 
 DOMAIN = "jemenaoutlook"
