@@ -11,7 +11,7 @@ from homeassistant.components.recorder.statistics import (
     async_add_external_statistics,
     statistics_during_period
 )
-from homeassistant.components.recorder.models import StatisticMetaData, StatisticData
+from homeassistant.components.recorder.models import StatisticMetaData, StatisticData, StatisticMeanType
 from datetime import timedelta
 
 _LOGGER = logging.getLogger(__name__)
@@ -71,12 +71,14 @@ class Collector:
                 async_add_external_statistics(
                     self._hass,
                     StatisticMetaData(
+                        mean_type=StatisticMeanType.NONE,
                         has_mean=False,
                         has_sum=True,
                         name=None,
                         source=DOMAIN,
                         statistic_id=statistic_id,
                         unit_of_measurement=SENSOR_TYPES[field][1],
+                        unit_class=None,
                     ),
                     statistics
                 )
