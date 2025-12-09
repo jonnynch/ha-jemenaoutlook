@@ -1,41 +1,38 @@
 {
-  "config": {
     "title": "Jemena Outlook",
-    "step": {
-      "user": {
-        "title": "Jemena Outlook Configuration",
-        "data": {
-          "username": "Username",
-          "password": "Password",
-          "CONF_COST": "Load the cost related sensors",
-          "CONF_TODAY": "Load today's related sensors (experimental)",
-          "CONF_DAILY": "Load daily related sensors",
-          "CONF_WEEKLY": "Load weekly related sensors",
-          "CONF_MONTHLY" : "Load monthly related sensors"
+    "config": {  
+      "step": {
+        "user": {
+          "title": "Jemena Outlook Configuration",
+          "data": {
+            "username": "Username",
+            "password": "Password",
+            "CONF_COST": "Load the cost related sensors",
+            "CONF_TODAY": "Load today's related sensors (experimental)",
+            "CONF_DAILY": "Load daily related sensors",
+            "CONF_WEEKLY": "Load weekly related sensors",
+            "CONF_MONTHLY" : "Load monthly related sensors"
+          }
         }
       }
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Jemena Outlook Configuration",
-        "data": {
-          "username": "Username",
-          "password": "Password",
-          "CONF_COST": "Load the cost related sensors",
-          "CONF_TODAY": "Load today's related sensors (experimental)",
-          "CONF_DAILY": "Load daily related sensors",
-          "CONF_WEEKLY": "Load weekly related sensors",
-          "CONF_MONTHLY" : "Load monthly related sensors"
+    },
+    "options": {
+      "step": {
+        "init": {
+          "title": "Jemena Outlook Configuration",
+          "data": {
+            "username": "Username",
+            "password": "Password",
+            "CONF_COST": "Load the cost related sensors",
+            "CONF_TODAY": "Load today's related sensors (experimental)",
+            "CONF_DAILY": "Load daily related sensors",
+            "CONF_WEEKLY": "Load weekly related sensors",
+            "CONF_MONTHLY" : "Load monthly related sensors"
+          }
         }
       }
+    },
+    "error": {
+        "already_configured": "Device is already configured"
     }
-  },
-  "error": {
-      "already_configured": "Device is already configured"
-  },
-  "abort": {
-      "already_configured": "Device is already configured"
   }
-}
