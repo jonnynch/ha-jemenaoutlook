@@ -10,6 +10,7 @@ from aiohttp.client_exceptions import ClientConnectorError
 from .PyJemenaOutlook.collector import Collector
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import debounce
+from homeassistant.helpers import config_validation as cv
 import logging
 
 from .const import (
@@ -22,6 +23,10 @@ PLATFORMS = ["sensor"]
 
 DEFAULT_SCAN_INTERVAL = timedelta(hours=1)
 DEBOUNCE_TIME = 60  # in seconds
+
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
 
 """The Jemena Outlook integration."""
 async def async_setup(hass: HomeAssistant, config: dict):
