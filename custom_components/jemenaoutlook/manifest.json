@@ -1,6 +1,7 @@
 {
   "domain": "jemenaoutlook",
   "name": "JemenaOutlook",
+  "after_dependencies": ["recorder"],
   "documentation": "https://github.com/jonnynch/ha-jemenaoutlook",
   "issue_tracker": "https://github.com/jonnynch/ha-jemenaoutlook/issues",
   "dependencies": [],
