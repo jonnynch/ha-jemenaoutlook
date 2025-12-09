@@ -8,5 +8,6 @@
   "documentation": "https://github.com/jonnynch/ha-jemenaoutlook",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/jonnynch/ha-jemenaoutlook/issues",
-  "requirements": []
+  "requirements": [],
+  "version": "2.0.0"
 }
