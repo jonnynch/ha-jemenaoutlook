@@ -16,9 +16,10 @@ Recently, it has redeveloped for the new jemena portal.
 This component is not endorsed by Jemena, nor have a I asked for their endorsement.
 
 ## Installing the component
-
+### Method 1 - HACS (Recommended)
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=jonnynch&repository=ha-jemenaoutlook)
 
+### Method 2 - Manual
 Use git to clone into a jemenaoutlook directory, when using this method make sure the user home-assistant is running as can read these files.
 ```
 cd <homeassistant-user-configuration-directory>/custom_components
@@ -36,3 +37,4 @@ It is now UI configured. After installing the component, you can add it via Home
 ## Integrate with Energy Dashboard
 Add "jemenaoutlook:consumption_usage" into the Grid consumption of Electricity grid
 Add "jemenaoutlook:generation" into the Return to grid of Electricity grid (If any)
+
