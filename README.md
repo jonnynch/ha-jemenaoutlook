@@ -17,7 +17,7 @@ This component is not endorsed by Jemena, nor have a I asked for their endorseme
 
 ## Installing the component
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Jon&repository=https%3A%2F%2Fgithub.com%2Fjonnynch%2Fha-jemenaoutlook)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=jonnynch&repository=ha-jemenaoutlook)
 
 Use git to clone into a jemenaoutlook directory, when using this method make sure the user home-assistant is running as can read these files.
 ```
