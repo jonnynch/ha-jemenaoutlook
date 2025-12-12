@@ -1,5 +1,5 @@
 {
   "name": "Jemena Portal (Australia/Melbourne)",
-  "homeassistant": "2025.6.0",
-  "render_readme": true
+  "country": ["AU"],
+  "homeassistant": "2025.6.0"
 }
