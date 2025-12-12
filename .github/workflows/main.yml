@@ -1,9 +1,8 @@
-name: Validate
+name: Validate hacs
 
 on:
-  workflow_dispatch:
-
-permissions: {}
+  push:
+  pull_request:
 
 jobs:
   validate-hacs:
