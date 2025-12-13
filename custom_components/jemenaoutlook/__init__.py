@@ -14,7 +14,7 @@ from homeassistant.helpers import config_validation as cv
 import logging
 
 from .const import (
-    CONF_COST, CONF_DAILY, CONF_MONTHLY, CONF_TODAY, CONF_WEEKLY, DOMAIN, COLLECTOR, COORDINATOR, UPDATE_LISTENER
+    DOMAIN, COLLECTOR, COORDINATOR, UPDATE_LISTENER
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -36,14 +36,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Jemena Outlook from a config entry."""
-    collector = Collector(hass, entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD]
-                          ,options = {
-                            CONF_COST: entry.data.get(CONF_COST,True),
-                            CONF_TODAY: entry.data.get(CONF_TODAY,True),
-                            CONF_DAILY: entry.data.get(CONF_DAILY,True),
-                            CONF_WEEKLY: entry.data.get(CONF_WEEKLY,True),
-                            CONF_MONTHLY: entry.data.get(CONF_MONTHLY,True),
-                        })
+    collector = Collector(hass, entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD])
 
     try:
         await collector.async_update()

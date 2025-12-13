@@ -1,7 +1,6 @@
 import asyncio
 import csv
 import time
-from .const import CONF_DAILY
 from .jemena_client import JemenaOutlookClient
 import logging
 def read_secret(file_path):
@@ -20,8 +19,7 @@ async def test():
     file_path = 'PyJemenaOutlook/secret.csv'
     secret = read_secret(file_path)
 
-    options = {CONF_DAILY: True}
-    client = JemenaOutlookClient(secret['username'], secret['password'], options)
+    client = JemenaOutlookClient(secret['username'], secret['password'])
     
     start_time = time.time()
     await client.fetch_data()

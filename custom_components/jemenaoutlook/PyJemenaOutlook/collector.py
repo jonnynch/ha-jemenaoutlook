@@ -19,10 +19,10 @@ _LOGGER = logging.getLogger(__name__)
 class Collector:
     """Collector for PyJemenaOutlook."""
 
-    def __init__(self, hass, username, password, options):
+    def __init__(self, hass, username, password):
         """Init collector."""
         self.client = JemenaOutlookClient(
-            username, password, options, REQUESTS_TIMEOUT)
+            username, password, REQUESTS_TIMEOUT)
         self._hass = hass
         self.data = {}
 

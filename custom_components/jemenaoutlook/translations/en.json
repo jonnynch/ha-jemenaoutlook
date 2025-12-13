@@ -6,12 +6,7 @@
           "title": "Jemena Outlook Configuration",
           "data": {
             "username": "Username",
-            "password": "Password",
-            "CONF_COST": "Load the cost related sensors",
-            "CONF_TODAY": "Load today's related sensors (experimental)",
-            "CONF_DAILY": "Load daily related sensors",
-            "CONF_WEEKLY": "Load weekly related sensors",
-            "CONF_MONTHLY" : "Load monthly related sensors"
+            "password": "Password"
           }
         }
       }
@@ -22,12 +17,7 @@
           "title": "Jemena Outlook Configuration",
           "data": {
             "username": "Username",
-            "password": "Password",
-            "CONF_COST": "Load the cost related sensors",
-            "CONF_TODAY": "Load today's related sensors (experimental)",
-            "CONF_DAILY": "Load daily related sensors",
-            "CONF_WEEKLY": "Load weekly related sensors",
-            "CONF_MONTHLY" : "Load monthly related sensors"
+            "password": "Password"
           }
         }
       }

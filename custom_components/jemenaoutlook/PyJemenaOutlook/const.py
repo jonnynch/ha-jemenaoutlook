@@ -12,12 +12,6 @@ CONSUMPTION_URL = 'https://api.jemena.com.au/customer/portal/v1/consumption/nmi'
 
 REQUESTS_TIMEOUT = 60
 
-CONF_COST = "CONF_COST"
-CONF_TODAY = "CONF_TODAY"
-CONF_DAILY = "CONF_DAILY"
-CONF_WEEKLY = "CONF_WEEKLY"
-CONF_MONTHLY = "CONF_MONTHLY"
-
 MIN_TIME_BETWEEN_UPDATES = timedelta(hours=1)
 
 FIELDS = ["consumptionUsage","postCodeAverage","generation"]
