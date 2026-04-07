@@ -101,8 +101,8 @@ class JemenaOutlookClient(object):
             _LOGGER.debug("Jemena outlook properties data: %s", json_output)
 
             return json_output[0]['nmi'], json_output[0]['postcode'], json_output[0]['propertyType']
-    async def _get_raw_data(self, session, jwt, nmi, post_code, property_type, date_from):
-        _LOGGER.info("_get_raw_data")
+    async def _get_raw_data(self, semaphore, session, jwt, nmi, post_code, property_type, date_from):
+        _LOGGER.info("_get_raw_data - %s", date_from)
         """Get hourly data for specific date."""
 
         date_string = date_from.strftime('%Y-%m-%d')
@@ -121,28 +121,29 @@ class JemenaOutlookClient(object):
             "dateFrom": date_string,
             "dateTo": date_string
         }
-        async with session.post(CONSUMPTION_URL, headers=headers, json=body, timeout = REQUESTS_TIMEOUT) as raw_res:
-            try:
-                json_output = await raw_res.json()
-            except (OSError, json.decoder.JSONDecodeError):
-                raise JemenaOutlookError("Could not get daily data: {}".format(raw_res))
-            
-            _LOGGER.debug("Jemena outlook daily data - json: %s", json_output)
-            period_data = self._extract_period_data(json_output)
-            
-            _LOGGER.debug("Jemena outlook daily data - extracted: %s", period_data)
-            
-        return period_data
-               
 
+        async with semaphore:
+            async with session.post(CONSUMPTION_URL, headers=headers, json=body, timeout = REQUESTS_TIMEOUT) as raw_res:
+                try:
+                    json_output = await raw_res.json()
+                except (OSError, json.decoder.JSONDecodeError):
+                    raise JemenaOutlookError("Could not get daily data: {}".format(raw_res))
+                
+                _LOGGER.debug("Jemena outlook daily data - json: %s", json_output)
+                period_data = self._extract_period_data(json_output, date_from)
+                
+                _LOGGER.debug("Jemena outlook daily data - extracted: %s", period_data)
+                
+            return period_data
 
-    def _extract_period_data(self, json_data):
-        _LOGGER.info("_extract_period_data")
+    def _extract_period_data(self, json_data, date_from):
+        _LOGGER.info("_extract_period_data - %s", date_from)
         period_data = {}
         for field in FIELDS:
             period_data[field] = []
         
         date_from = json_data.get('dateFrom','')
+
         if date_from:
             tz = get_localzone()
             for i, interval in enumerate(json_data['interval']):
@@ -157,12 +158,17 @@ class JemenaOutlookClient(object):
                         'value': json_data[field][i]
                     }
                     period_data[field].append(entry)
+        else:
+            _LOGGER.warning("_extract_period_data - %s - skipped - %s", date_from, json_data)
         return period_data
 
     async def fetch_data(self, backday = 3):
         _LOGGER.info("fetch_data")
         """Get the latest data from Jemena Outlook."""
         
+        max_concurrent = 3  # Set your limit
+        semaphore = asyncio.Semaphore(max_concurrent)
+
         # setup requests session
         async with aiohttp.ClientSession() as session:
             # Get login page
@@ -182,7 +188,7 @@ class JemenaOutlookClient(object):
                 self._raw_data[field] = []
             tasks = []
             while date_from <= today:
-                tasks.append(self._get_raw_data(session, jwt, nmi, post_code, property_type, date_from))
+                tasks.append(self._get_raw_data(semaphore, session, jwt, nmi, post_code, property_type, date_from))
                 date_from = date_from + timedelta(days=1)
             responses = await asyncio.gather(*tasks)
             for response in responses:

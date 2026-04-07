@@ -14,7 +14,7 @@ def read_secret(file_path):
     return result_dict
 
 async def test():
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     # Example usage
     file_path = 'PyJemenaOutlook/secret.csv'
     secret = read_secret(file_path)
@@ -22,11 +22,11 @@ async def test():
     client = JemenaOutlookClient(secret['username'], secret['password'], secret['gmid'])
     
     start_time = time.time()
-    await client.fetch_data(17)
+    await client.fetch_data(30)
     end_time = time.time()
 
-    print(client.get_data())
-    print(client.get_raw_data())
+    #print(client.get_data())
+    #print(client.get_raw_data())
     print(f"Time taken: {end_time - start_time} seconds")
 
 asyncio.run(test())

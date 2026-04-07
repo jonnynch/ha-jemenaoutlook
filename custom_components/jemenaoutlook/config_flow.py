@@ -33,7 +33,7 @@ DATA_SCHEMA = vol.Schema({
         )
     ),
     vol.Optional(CONF_BACKDAY): NumberSelector(
-        NumberSelectorConfig(min=1, max=20, mode=NumberSelectorMode.BOX)
+        NumberSelectorConfig(min=1, max=30, mode=NumberSelectorMode.BOX)
     )
 })
 
@@ -116,7 +116,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_BACKDAY,
                     default=existing_data.get(CONF_BACKDAY, DEFAULT_BACKDAY),
                 ): NumberSelector(
-                   NumberSelectorConfig(min=1, max=20, mode=NumberSelectorMode.BOX)
+                   NumberSelectorConfig(min=1, max=30, mode=NumberSelectorMode.BOX)
                 )
             }
         )
