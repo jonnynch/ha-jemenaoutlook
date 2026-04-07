@@ -142,21 +142,21 @@ class JemenaOutlookClient(object):
         for field in FIELDS:
             period_data[field] = []
         
-        date_from = json_data['dateFrom']
-        tz = get_localzone()
-
-        for i, interval in enumerate(json_data['interval']):
-            time_from = interval.split("-")[0].strip()
-            time_to = interval.split("-")[1].strip()
-            for field in FIELDS:
-                if len(json_data[field]) <= i:
-                    continue
-                entry = {
-                    'from': datetime.strptime(date_from + ' ' + time_from, "%Y-%m-%d %H:%M").replace(tzinfo=tz),
-                    'to': datetime.strptime(date_from + ' ' + time_to, "%Y-%m-%d %H:%M").replace(tzinfo=tz),
-                    'value': json_data[field][i]
-                }
-                period_data[field].append(entry)
+        date_from = json_data.get('dateFrom','')
+        if date_from:
+            tz = get_localzone()
+            for i, interval in enumerate(json_data['interval']):
+                time_from = interval.split("-")[0].strip()
+                time_to = interval.split("-")[1].strip()
+                for field in FIELDS:
+                    if len(json_data[field]) <= i:
+                        continue
+                    entry = {
+                        'from': datetime.strptime(date_from + ' ' + time_from, "%Y-%m-%d %H:%M").replace(tzinfo=tz),
+                        'to': datetime.strptime(date_from + ' ' + time_to, "%Y-%m-%d %H:%M").replace(tzinfo=tz),
+                        'value': json_data[field][i]
+                    }
+                    period_data[field].append(entry)
         return period_data
 
     async def fetch_data(self, backday = 3):

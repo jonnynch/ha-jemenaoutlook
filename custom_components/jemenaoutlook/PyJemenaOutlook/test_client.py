@@ -22,7 +22,7 @@ async def test():
     client = JemenaOutlookClient(secret['username'], secret['password'], secret['gmid'])
     
     start_time = time.time()
-    await client.fetch_data()
+    await client.fetch_data(17)
     end_time = time.time()
 
     print(client.get_data())

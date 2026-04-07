@@ -11,8 +11,12 @@ from homeassistant.helpers.selector import (
     TextSelector,
     TextSelectorConfig,
     TextSelectorType,
+    NumberSelector,
+    NumberSelectorConfig,
+    NumberSelectorMode
 )
-from .const import (DOMAIN, CONF_GMID)
+from .const import (DOMAIN, CONF_GMID, CONF_BACKDAY, DEFAULT_BACKDAY)
+from .PyJemenaOutlook.collector import Collector
 
 DATA_SCHEMA = vol.Schema({
     vol.Required(CONF_USERNAME): TextSelector(
@@ -27,6 +31,9 @@ DATA_SCHEMA = vol.Schema({
         TextSelectorConfig(
             type=TextSelectorType.PASSWORD
         )
+    ),
+    vol.Optional(CONF_BACKDAY): NumberSelector(
+        NumberSelectorConfig(min=1, max=20, mode=NumberSelectorMode.BOX)
     )
 })
 
@@ -46,6 +53,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             try:
                 # Save the user input into self.data so it's retained
                 self.data = user_input
+                
                 return self.async_create_entry(
                         title=DOMAIN,
                         data=self.data,
@@ -68,6 +76,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self.hass.config_entries.async_update_entry(
                     self._get_reconfigure_entry(), data=user_input
                 )
+
+                # Populate observations and daily forecasts data
+                collector = Collector(self.hass, self.data[CONF_USERNAME], self.data[CONF_PASSWORD], self.data[CONF_GMID], self.data.get(CONF_BACKDAY, DEFAULT_BACKDAY))
+                await collector.async_update()
+                
                 return self.async_abort(reason="reconfigure_successful")
             except Exception:
                 _LOGGER.exception("Unexpected exception")
@@ -98,6 +111,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     TextSelectorConfig(
                         type=TextSelectorType.PASSWORD
                     )
+                ),
+                vol.Optional(
+                    CONF_BACKDAY,
+                    default=existing_data.get(CONF_BACKDAY, DEFAULT_BACKDAY),
+                ): NumberSelector(
+                   NumberSelectorConfig(min=1, max=20, mode=NumberSelectorMode.BOX)
                 )
             }
         )
