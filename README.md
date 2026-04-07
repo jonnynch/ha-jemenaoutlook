@@ -34,6 +34,19 @@ Please make sure custom_components/jemenaoutlook/sensor.py exists.
 
 It is now UI configured. After installing the component, you can add it via Home Assistant.
 
+The username and password is the credential that you used to login the Jemena Portal
+
+The gmid is the key field used to avoid 2FA prompts. You can find it in the request payload when login via Browser.
+
+Please use the browser developer tools, find below request.
+
+URL: https://accounts.au1.gigya.com/accounts.login
+
+From Data:
+
+    key: gmid
+    value: gmid.ver4.XXXXXXXXXXX
+
 ## Integrate with Energy Dashboard
 Add "jemenaoutlook:consumption_usage" into the Grid consumption of Electricity grid
 Add "jemenaoutlook:generation" into the Return to grid of Electricity grid (If any)

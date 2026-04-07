@@ -19,18 +19,19 @@ _LOGGER = logging.getLogger(__name__)
 class Collector:
     """Collector for PyJemenaOutlook."""
 
-    def __init__(self, hass, username, password):
+    def __init__(self, hass, username, password, gmid, backday):
         """Init collector."""
         self.client = JemenaOutlookClient(
-            username, password, REQUESTS_TIMEOUT)
+            username, password, gmid, REQUESTS_TIMEOUT)
         self._hass = hass
+        self.backday = backday
         self.data = {}
 
     async def _fetch_data(self):
         """Fetch latest data from Jemena Outlook."""
         try:
             _LOGGER.info("_fetch_data")
-            await self.client.fetch_data()
+            await self.client.fetch_data(self.backday)
         except JemenaOutlookError as exp:
             _LOGGER.error("Error on receive last Jemena Outlook data: %s", exp)
             return

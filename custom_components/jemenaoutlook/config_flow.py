@@ -12,13 +12,18 @@ from homeassistant.helpers.selector import (
     TextSelectorConfig,
     TextSelectorType,
 )
-from .const import DOMAIN
+from .const import (DOMAIN, CONF_GMID)
 
 DATA_SCHEMA = vol.Schema({
     vol.Required(CONF_USERNAME): TextSelector(
         TextSelectorConfig(type=TextSelectorType.EMAIL)
     ),
     vol.Required(CONF_PASSWORD): TextSelector(
+        TextSelectorConfig(
+            type=TextSelectorType.PASSWORD
+        )
+    ),
+    vol.Required(CONF_GMID): TextSelector(
         TextSelectorConfig(
             type=TextSelectorType.PASSWORD
         )
@@ -81,6 +86,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Required(
                     CONF_PASSWORD,
                     default=existing_data.get(CONF_PASSWORD),
+                ): TextSelector(
+                    TextSelectorConfig(
+                        type=TextSelectorType.PASSWORD
+                    )
+                ),
+                vol.Required(
+                    CONF_GMID,
+                    default=existing_data.get(CONF_GMID),
                 ): TextSelector(
                     TextSelectorConfig(
                         type=TextSelectorType.PASSWORD

@@ -19,7 +19,7 @@ async def test():
     file_path = 'PyJemenaOutlook/secret.csv'
     secret = read_secret(file_path)
 
-    client = JemenaOutlookClient(secret['username'], secret['password'])
+    client = JemenaOutlookClient(secret['username'], secret['password'], secret['gmid'])
     
     start_time = time.time()
     await client.fetch_data()

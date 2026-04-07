@@ -14,10 +14,11 @@ class JemenaOutlookError(Exception):
 
 class JemenaOutlookClient(object):
 
-    def __init__(self, username, password, timeout=REQUESTS_TIMEOUT):
+    def __init__(self, username, password, gmid, timeout=REQUESTS_TIMEOUT):
         """Initialize the client object."""
         self.username = username
         self.password = password
+        self.gmid = gmid
         self._data = {}
         self._raw_data = {}
         self._timeout = timeout
@@ -46,6 +47,7 @@ class JemenaOutlookClient(object):
             "password": self.password,
             "APIKey": GIGYA_APIKEY,
             'pageURL': 'https://myportal.jemena.com.au/', 
+            'gmid': self.gmid,
             'format': 'json'
             }
         async with session.post(LOGIN_URL,
@@ -157,14 +159,14 @@ class JemenaOutlookClient(object):
                 period_data[field].append(entry)
         return period_data
 
-    async def fetch_data(self):
+    async def fetch_data(self, backday = 3):
         _LOGGER.info("fetch_data")
         """Get the latest data from Jemena Outlook."""
         
         # setup requests session
         async with aiohttp.ClientSession() as session:
             # Get login page
-            await self._get_login_page(session)
+            # await self._get_login_page(session)
             
             # Post login page
             login_token = await self._post_login_page(session)
@@ -174,7 +176,7 @@ class JemenaOutlookClient(object):
             nmi, post_code, property_type = await self._get_properties(session, jwt)
             # Get Hourly Usage data
             today = datetime.today()
-            date_from = today - timedelta(days=3)
+            date_from = today - timedelta(days=backday)
             self._raw_data = {}
             for field in FIELDS:
                 self._raw_data[field] = []

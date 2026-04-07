@@ -25,3 +25,6 @@ SENSOR_TYPES = {
     'generation': ['Generation', KILOWATT_HOUR, 'mdi:flash', SensorStateClass.TOTAL]
 }
 
+BACKDAY = 3
+
+CONF_GMID = "gmid"

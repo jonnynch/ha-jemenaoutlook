@@ -6,7 +6,8 @@
           "title": "Jemena Outlook Configuration",
           "data": {
             "username": "Username",
-            "password": "Password"
+            "password": "Password",
+            "gmid": "gmid"
           }
         }
       }
@@ -17,7 +18,8 @@
           "title": "Jemena Outlook Configuration",
           "data": {
             "username": "Username",
-            "password": "Password"
+            "password": "Password",
+            "gmid": "gmid"
           }
         }
       }
