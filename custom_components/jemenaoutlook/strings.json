@@ -1,29 +1,32 @@
 {
-    "title": "Jemena Outlook",
-    "config": {  
-      "step": {
-        "user": {
-          "title": "Jemena Outlook Configuration",
-          "data": {
-            "username": "Username",
-            "password": "Password",
-            "gmid": "gmid",
-            "backday": "Number of days to reload per cycle (default: 3)"
-          }
+  "title": "Jemena Outlook",
+  "config": {  
+    "step": {
+      "user": {
+        "title": "Jemena Outlook Configuration",
+        "data": {
+          "username": "Username",
+          "password": "Password",
+          "gmid": "gmid",
+          "backday": "Number of days to reload per cycle (default: 2)"
         }
       }
     },
-    "options": {
-      "step": {
-        "init": {
-          "title": "Jemena Outlook Configuration",
-          "data": {
-            "username": "Username",
-            "password": "Password",
-            "gmid": "gmid",
-            "backday": "Number of days to reload per cycle (default: 3)"
-          }
+    "abort": {
+      "reconfigure_successful": "Authentication updated successfully"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Jemena Outlook Configuration",
+        "data": {
+          "username": "Username",
+          "password": "Password",
+          "gmid": "gmid",
+          "backday": "Number of days to reload per cycle (default: 2)"
         }
       }
     }
   }
+}

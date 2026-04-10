@@ -15,7 +15,7 @@ class JemenaOutlookError(Exception):
 
 class JemenaOutlookClient(object):
 
-    def __init__(self, username, password, gmid, timeout=REQUESTS_TIMEOUT):
+    def __init__(self, username, password, gmid = None, timeout=REQUESTS_TIMEOUT):
         """Initialize the client object."""
         self.username = username
         self.password = password
