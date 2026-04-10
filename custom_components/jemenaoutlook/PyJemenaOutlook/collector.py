@@ -21,8 +21,7 @@ class Collector:
 
     def __init__(self, hass, username, password, gmid, backday):
         """Init collector."""
-        self.client = JemenaOutlookClient(
-            username, password, gmid, REQUESTS_TIMEOUT)
+        self.client = JemenaOutlookClient(username, password, gmid, REQUESTS_TIMEOUT)
         self._hass = hass
         self.backday = backday
         self.data = {}
