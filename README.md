@@ -32,23 +32,14 @@ This component is not endorsed by Jemena, nor have a I asked for their endorseme
 4. Enter your credentials:
    - **username**: Your Jemena account email
    - **password**: Your Jemena account password
-   - **gmid**: The Gigya Machine ID that used to bypass the 2FA (see below)
-   - **backday**: The number of days to look back when loading data (default: 3)
-
-### How to Retrieve gmid
-1. Open your browser and enable **Developer Tools** (F12)
-2. Go to the [Jemena Portal](https://myportal.jemena.com.au/) and login
-3. **Important**: Check the "Remember this device" checkbox when logging in
-4. In Developer Tools, go to the **Application** tab (Chrome) or **Storage** tab (Firefox)
-5. Navigate to **Cookies** → `.gigya.com`
-6. Find the cookie named `gmid`
-7. Copy the value (format: `gmid.ver4.XXXXXXXXXXX`)
+   - **backday**: The number of days to look back when loading data (default: 2)
+5. Enter your Email Code received
 
 ### About backday
 The integration updates data every hour. Due to potential delays in the Jemena portal, you can configure how many days back to reload data on each cycle. For example:
-- **backday = 3**: Every hour, the integration will reload data from 3 days ago to present
+- **backday = 2**: Every hour, the integration will reload data from 2 days ago to present
 - This ensures you capture any delayed or updated data from the portal
-- Recommended range: 1-7 days
+- Recommended range: 2-5 days
 
 ## Energy Dashboard Integration
 To integrate with Home Assistant's Energy Dashboard:
