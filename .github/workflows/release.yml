@@ -1,0 +1,39 @@
+name: Bump & Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "New version (e.g. 1.3.0)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set version
+        run: |
+          jq '.version = "${{ github.event.inputs.version }}"' custom_components/jemenaoutlook/manifest.json > tmp.json
+          mv tmp.json custom_components/jemenaoutlook/manifest.json
+
+      - name: Commit & tag
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git commit -am "chore: release v${{ github.event.inputs.version }}"
+          git tag v${{ github.event.inputs.version }}
+          git push
+          git push --tags
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          name: v${{ github.event.inputs.version }}
