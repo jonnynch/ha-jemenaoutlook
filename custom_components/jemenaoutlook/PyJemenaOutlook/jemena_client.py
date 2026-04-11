@@ -2,6 +2,7 @@ import json
 import logging
 import aiohttp
 import asyncio
+import copy
 from .const import BOOTSTRAP_URL, FIELDS, FINALIZE_REG_URL, JEMENA_APIKEY, PROPERTIES_URL,REQUESTS_TIMEOUT, GIGYA_APIKEY, CONSUMPTION_URL, LOGIN_URL,JWT_URL, TFA_EMAIL_COMPLETE_URL, TFA_EMAIL_GET_URL, TFA_EMAIL_SEND_URL, TFA_ERROR, TFA_FINALIZE_URL, TFA_INIT_URL
 from datetime import datetime, timedelta
 from types import SimpleNamespace
@@ -215,9 +216,27 @@ class JemenaOutlookClient(object):
         }
         return await self._get(session, BOOTSTRAP_URL, params)
 
+    def redact(self,data):
+        sensitive_keys = ['password']
+        redacted = copy.deepcopy(data)
+        def redact_dict(d):
+            if not isinstance(d, dict):
+                return d
+            for key in d:
+                # Check if key matches sensitive field (case-insensitive)
+                if any(sensitive.lower() in key.lower() for sensitive in sensitive_keys):
+                    d[key] = '***REDACTED***'
+                elif isinstance(d[key], dict):
+                    redact_dict(d[key])
+                elif isinstance(d[key], list):
+                    for item in d[key]:
+                        if isinstance(item, dict):
+                            redact_dict(item)
+            return d
+        return redact_dict(redacted)
     async def _post(self, session, url, data):
         _LOGGER.info("Request URL: %s", url)
-        _LOGGER.debug("Request data: %s", data)
+        _LOGGER.debug("Request data: %s", self.redact(data))
         async with session.post(url,
                                     data=data, 
                                     timeout = REQUESTS_TIMEOUT) as raw_res:
@@ -347,8 +366,7 @@ class JemenaOutlookClient(object):
         async with aiohttp.ClientSession() as session:
             # Get login page
             response = await self.login_with_session(session)
-            
-            if response.id_token:
+            if response.success:
                 jwt = response.id_token
                 _LOGGER.debug("jwt: %s", jwt)
                 nmi, post_code, property_type = await self._get_properties(session, jwt)
@@ -367,6 +385,10 @@ class JemenaOutlookClient(object):
                     for field in FIELDS:
                         self._raw_data[field] = self._raw_data[field] + response[field]
                 self._data.update(self.extract_state_data())
+            elif response.tfa:
+                _LOGGER.error("Login failed: %s-%s", response.error_code, response.error_message)
+                _LOGGER.error("Details: %s", response.error_details)
+                _LOGGER.error("Jemena Portal asked for TFA again, please try to reconfigure the entity")
             else:
                 _LOGGER.error("Login failed: %s-%s", response.error_code, response.error_message)
                 _LOGGER.error("Details: %s", response.error_details)

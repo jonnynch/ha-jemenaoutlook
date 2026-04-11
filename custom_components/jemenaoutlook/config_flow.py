@@ -111,7 +111,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     
     async def _async_finish_login(self):
         if self._reauth_entry:
+            collector = Collector(self.hass, self.data[CONF_USERNAME], self.data[CONF_PASSWORD], self.data[CONF_GMID], self.data.get(CONF_BACKDAY, DEFAULT_BACKDAY))
+            await collector.async_update()
+
             self.hass.config_entries.async_update_entry(self._reauth_entry,data=self.data)
             return self.async_abort(reason="reconfigure_successful")
-
+        
         return self.async_create_entry(title=DOMAIN,data=self.data)

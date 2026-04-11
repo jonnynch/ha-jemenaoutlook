@@ -62,6 +62,19 @@ async def async_update_options(hass: HomeAssistant, entry: ConfigEntry):
     """Handle config entry updates."""
     await hass.config_entries.async_reload(entry.entry_id)
 
+
+async def async_unload_entry(hass, entry):
+    entry_data = hass.data[DOMAIN].pop(entry.entry_id, {})
+    
+    coordinator = entry_data.get(COORDINATOR)
+
+    # Stop coordinator
+    if coordinator:
+        await coordinator.async_shutdown()
+
+    return True
+
+
 class JemenaOutlookDataUpdateCoordinator(DataUpdateCoordinator):
     """Data update coordinator for Jemena Outlook."""
 
