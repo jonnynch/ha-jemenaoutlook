@@ -16,11 +16,12 @@ class JemenaOutlookError(Exception):
 
 class JemenaOutlookClient(object):
 
-    def __init__(self, username, password, gmid = None, timeout=REQUESTS_TIMEOUT):
+    def __init__(self, username, password, gmid = None, otp_retriever = None, timeout=REQUESTS_TIMEOUT):
         """Initialize the client object."""
         self.username = username
         self.password = password
         self.gmid = gmid
+        self.otp_retriever = otp_retriever
         self._data = {}
         self._raw_data = {}
         self._timeout = timeout
@@ -388,7 +389,14 @@ class JemenaOutlookClient(object):
             elif response.tfa:
                 _LOGGER.error("Login failed: %s-%s", response.error_code, response.error_message)
                 _LOGGER.error("Details: %s", response.error_details)
-                _LOGGER.error("Jemena Portal asked for TFA again, please try to reconfigure the entity")
+                if self.otp_retriever:
+                    await self.send_tfa()
+                    code = await self.otp_retriever()
+                    response = await self.submit_tfa(code)
+                    if response.success:
+                        self.gmid = response.gmid
+                else:
+                    _LOGGER.error("Jemena Portal asked for TFA again, please try to reconfigure the entity")
             else:
                 _LOGGER.error("Login failed: %s-%s", response.error_code, response.error_message)
                 _LOGGER.error("Details: %s", response.error_details)

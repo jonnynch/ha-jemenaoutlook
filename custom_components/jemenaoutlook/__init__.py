@@ -14,8 +14,11 @@ from homeassistant.helpers import config_validation as cv
 import logging
 
 from .const import (
-    DOMAIN, COLLECTOR, COORDINATOR, UPDATE_LISTENER, CONF_GMID, CONF_BACKDAY, DEFAULT_BACKDAY
+    CONF_OTP_ENTITY, DOMAIN, COLLECTOR, COORDINATOR, UPDATE_LISTENER, CONF_GMID, CONF_BACKDAY, DEFAULT_BACKDAY
 )
+
+from functools import partial
+from .helpers import get_otp_token
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,7 +39,13 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Jemena Outlook from a config entry."""
-    collector = Collector(hass, entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD], entry.data[CONF_GMID], entry.data.get(CONF_BACKDAY, DEFAULT_BACKDAY))
+    otp_entity = entry.data.get(CONF_OTP_ENTITY)
+    otp_retriever = partial(
+                get_otp_token,
+                hass=hass,
+                entity_id=otp_entity
+            ) if otp_entity else None
+    collector = Collector(hass, entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD], entry.data.get(CONF_BACKDAY, DEFAULT_BACKDAY), entry.data[CONF_GMID], otp_retriever)
 
     try:
         await collector.async_update()

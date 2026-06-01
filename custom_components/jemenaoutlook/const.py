@@ -29,3 +29,5 @@ DEFAULT_BACKDAY = 2
 
 CONF_GMID = "gmid"
 CONF_BACKDAY = "backday"
+CONF_OTP = "otp"
+CONF_OTP_ENTITY = "otp_unique_name"

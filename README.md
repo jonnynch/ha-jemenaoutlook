@@ -33,13 +33,41 @@ This component is not endorsed by Jemena, nor have a I asked for their endorseme
    - **username**: Your Jemena account email
    - **password**: Your Jemena account password
    - **backday**: The number of days to look back when loading data (default: 2)
-5. Enter your Email Code received
+5. Enter your Email Code received or Enter your OTP sensor configured
 
 ### About backday
 The integration updates data every hour. Due to potential delays in the Jemena portal, you can configure how many days back to reload data on each cycle. For example:
 - **backday = 2**: Every hour, the integration will reload data from 2 days ago to present
 - This ensures you capture any delayed or updated data from the portal
 - Recommended range: 2-5 days
+
+### About OTP or OTP sensor configured
+The API integration requries OTP token. 
+
+If OTP is provided, it can only be used within limited time (depends on Jemena configuration), reconfiguration will be required to resume the integration.
+
+If OTP sensor is configured, it can retrieve the OTP automatically. It is done by creating IMAP entity and template sensor.
+
+1. IMAP Entity
+   - **Folder**: Inbox
+   - **IMAP Search**: FROM no-reply-test@jemena.com.au
+   - **Template to create custom event data**: `{{ text | regex_findall_index("([0-9]{6})")}}`
+   - Please check [IMAP integration documentation](https://www.home-assistant.io/integrations/imap) for the details
+2. Template sensors
+   - configuration.yaml
+      ```
+      template: !include template.yaml
+      ```
+
+   - template.yaml
+      ```
+      - trigger:
+          - platform: event
+            event_type: imap_content
+        sensor:
+          - name: jemena_otp
+            state: "{{ trigger.event.data.custom }}"
+      ```
 
 ## Energy Dashboard Integration
 To integrate with Home Assistant's Energy Dashboard:

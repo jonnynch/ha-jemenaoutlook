@@ -13,11 +13,16 @@ from homeassistant.helpers.selector import (
     TextSelectorType,
     NumberSelector,
     NumberSelectorConfig,
-    NumberSelectorMode
+    NumberSelectorMode,
+    EntitySelector,
+    EntitySelectorConfig
 )
-from .const import (DOMAIN, CONF_GMID, CONF_BACKDAY, DEFAULT_BACKDAY)
+from .const import (CONF_OTP, CONF_OTP_ENTITY, DOMAIN, CONF_GMID, CONF_BACKDAY, DEFAULT_BACKDAY)
 from .PyJemenaOutlook.collector import Collector
 from .PyJemenaOutlook.jemena_client import JemenaOutlookClient as Client
+
+from functools import partial
+from .helpers import get_otp_token
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -89,11 +94,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_otp(self, user_input=None):
         errors = {}
         if user_input is not None:
-            code = user_input["otp"]
+            input_code = user_input.get(CONF_OTP)
+            otp_entity = user_input.get(CONF_OTP_ENTITY)
+            code = await get_otp_token(self.hass, otp_entity, input_code)
             response = await self.client.submit_tfa(code)
 
             if response.success:
                 self.data[CONF_GMID] = response.gmid
+                self.data[CONF_OTP_ENTITY] = otp_entity
                 return await self._async_finish_login()
             else:
                 _LOGGER.error("Login failed: %s - %s", response.error_code, response.error_message)
@@ -103,7 +111,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="otp",
             data_schema=vol.Schema({
-                vol.Required("otp"): str,
+                vol.Optional(CONF_OTP): TextSelector(
+                    TextSelectorConfig(type=TextSelectorType.TEXT, autocomplete="one-time-code, leave blank if you use otp entity")
+                ),
+                vol.Optional(CONF_OTP_ENTITY): EntitySelector(
+                    EntitySelectorConfig(domain=["sensor"])
+                )
             }),
             errors=errors
         )
@@ -111,7 +124,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     
     async def _async_finish_login(self):
         if self._reauth_entry:
-            collector = Collector(self.hass, self.data[CONF_USERNAME], self.data[CONF_PASSWORD], self.data[CONF_GMID], self.data.get(CONF_BACKDAY, DEFAULT_BACKDAY))
+            otp_entity = self.data.get(CONF_OTP_ENTITY)
+            otp_retriever = partial(
+                get_otp_token,
+                hass=self.hass,
+                entity_id=otp_entity
+            ) if otp_entity else None
+    
+            collector = Collector(self.hass, self.data[CONF_USERNAME], self.data[CONF_PASSWORD], self.data.get(CONF_BACKDAY, DEFAULT_BACKDAY), self.data[CONF_GMID], otp_retriever)
             await collector.async_update()
 
             self.hass.config_entries.async_update_entry(self._reauth_entry,data=self.data)
