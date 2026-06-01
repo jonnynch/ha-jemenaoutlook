@@ -13,19 +13,24 @@ Recently, it has redeveloped for the new jemena portal.
 This component is not endorsed by Jemena, nor have a I asked for their endorsement.
 
 ## Features
+
 - Electricity usage monitoring
 - Easy configuration through the UI
 - Integration with Home Assistant Energy Dashboard
 
 ## Installation
+
 ### HACS (Recommended)
+
 [![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=jonnynch&repository=ha-jemenaoutlook)
 
 ### Manual Installation
+
 1. Copy the `custom_components/jemenaoutlook` folder to your Home Assistant's `custom_components` directory
 2. Restart Home Assistant
 
 ## Configuring the sensor
+
 1. Go to **Settings** → **Devices & Services**
 2. Click **Add Integration**
 3. Search for "Jemena Outlook"
@@ -36,13 +41,16 @@ This component is not endorsed by Jemena, nor have a I asked for their endorseme
 5. Enter your Email Code received or Enter your OTP sensor configured
 
 ### About backday
+
 The integration updates data every hour. Due to potential delays in the Jemena portal, you can configure how many days back to reload data on each cycle. For example:
+
 - **backday = 2**: Every hour, the integration will reload data from 2 days ago to present
 - This ensures you capture any delayed or updated data from the portal
 - Recommended range: 2-5 days
 
 ### About OTP or OTP sensor configured
-The API integration requries OTP token. 
+
+The API integration requries OTP token.
 
 If OTP is provided, it can only be used within limited time (depends on Jemena configuration), reconfiguration will be required to resume the integration.
 
@@ -55,22 +63,25 @@ If OTP sensor is configured, it can retrieve the OTP automatically. It is done b
    - Please check [IMAP integration documentation](https://www.home-assistant.io/integrations/imap) for the details
 2. Template sensors
    - configuration.yaml
-      ```
-      template: !include template.yaml
-      ```
+
+     ```
+     template: !include template.yaml
+     ```
 
    - template.yaml
-      ```
-      - trigger:
-          - platform: event
-            event_type: imap_content
-        sensor:
-          - name: jemena_otp
-            state: "{{ trigger.event.data.custom }}"
-      ```
+     ```
+     - trigger:
+         - platform: event
+           event_type: imap_content
+       sensor:
+         - name: jemena_otp
+           state: "{{ trigger.event.data.custom }}"
+     ```
 
 ## Energy Dashboard Integration
+
 To integrate with Home Assistant's Energy Dashboard:
+
 1. Go to **Settings** → **Dashboards** → **Energy**
 2. Click on **Electricity grid**
 3. Under **Grid consumption**, add: `jemenaoutlook:consumption_usage`
@@ -78,4 +89,5 @@ To integrate with Home Assistant's Energy Dashboard:
 5. Click **Save**
 
 ## Support
+
 For issues and feature requests, please use the [GitHub issue tracker](https://github.com/jonnynch/ha-jemenaoutlook/issues).
