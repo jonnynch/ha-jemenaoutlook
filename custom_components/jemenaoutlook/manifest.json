@@ -1,13 +1,18 @@
 {
   "domain": "jemenaoutlook",
   "name": "JemenaOutlook",
-  "after_dependencies": ["recorder"],
-  "codeowners": ["@mvandersteen","@jonnynch"],
+  "after_dependencies": [
+    "recorder"
+  ],
+  "codeowners": [
+    "@mvandersteen",
+    "@jonnynch"
+  ],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/jonnynch/ha-jemenaoutlook",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/jonnynch/ha-jemenaoutlook/issues",
   "requirements": [],
-  "version": "2.1.2"
+  "version": "2.2.1"
 }
