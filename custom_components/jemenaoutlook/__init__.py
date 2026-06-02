@@ -38,6 +38,7 @@ async def async_setup(hass: HomeAssistant, config: dict):
     return True
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    _LOGGER.info("async_setup_entry")
     """Set up Jemena Outlook from a config entry."""
     otp_entity = entry.data.get(CONF_OTP_ENTITY)
     otp_retriever = partial(
@@ -62,33 +63,36 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     }
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-
-    update_listener = entry.add_update_listener(async_update_options)
-    hass.data[DOMAIN][entry.entry_id][UPDATE_LISTENER] = update_listener
+    entry.async_on_unload(entry.add_update_listener(async_update_options))
 
     return True
 async def async_update_options(hass: HomeAssistant, entry: ConfigEntry):
     """Handle config entry updates."""
+    _LOGGER.info("async_update_options")
     await hass.config_entries.async_reload(entry.entry_id)
 
 
 async def async_unload_entry(hass, entry):
-    entry_data = hass.data[DOMAIN].pop(entry.entry_id, {})
-    
-    coordinator = entry_data.get(COORDINATOR)
-
-    # Stop coordinator
-    if coordinator:
-        await coordinator.async_shutdown()
-
-    return True
-
+    _LOGGER.info("async_unload_entry")
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unload_ok:
+        # Clean up data
+        entry_data = hass.data[DOMAIN].pop(entry.entry_id, {})
+        coordinator = entry_data.get(COORDINATOR)
+        # Cancel any tasks if needed
+        if coordinator:
+            await coordinator.async_shutdown()
+        _LOGGER.info("Successfully unloaded entry %s", entry.entry_id)
+    else:
+        _LOGGER.error("Failed to unload platforms for entry %s", entry.entry_id)
+    return unload_ok
 
 class JemenaOutlookDataUpdateCoordinator(DataUpdateCoordinator):
     """Data update coordinator for Jemena Outlook."""
 
     def __init__(self, hass: HomeAssistant, collector: Collector) -> None:
         """Initialise the data update coordinator."""
+        _LOGGER.info("Initialise coordinator")
         self.collector = collector
         super().__init__(
             hass=hass,
@@ -108,11 +112,13 @@ class JemenaOutlookDataUpdateCoordinator(DataUpdateCoordinator):
     @callback
     def entity_registry_updated(self, event):
         """Handle entity registry update events."""
+        _LOGGER.info("entity_registry_updated")
         if event.data["action"] == "remove":
             self.remove_empty_devices()
 
     def remove_empty_devices(self):
         """Remove devices with no entities."""
+        _LOGGER.info("remove_empty_devices")
         entity_registry = er.async_get(self.hass)
         device_registry = dr.async_get(self.hass)
         device_list = dr.async_entries_for_config_entry(

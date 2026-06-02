@@ -93,6 +93,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         )
     async def async_step_otp(self, user_input=None):
         errors = {}
+        entry_data = self._reauth_entry.data if self._reauth_entry else {}
+        
         if user_input is not None:
             input_code = user_input.get(CONF_OTP)
             otp_entity = user_input.get(CONF_OTP_ENTITY)
@@ -114,7 +116,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Optional(CONF_OTP): TextSelector(
                     TextSelectorConfig(type=TextSelectorType.TEXT, autocomplete="one-time-code, leave blank if you use otp entity")
                 ),
-                vol.Optional(CONF_OTP_ENTITY): EntitySelector(
+                vol.Optional(CONF_OTP_ENTITY, default=entry_data.get(CONF_OTP_ENTITY)): EntitySelector(
                     EntitySelectorConfig(domain=["sensor"])
                 )
             }),
@@ -124,17 +126,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     
     async def _async_finish_login(self):
         if self._reauth_entry:
-            otp_entity = self.data.get(CONF_OTP_ENTITY)
-            otp_retriever = partial(
-                get_otp_token,
-                hass=self.hass,
-                entity_id=otp_entity
-            ) if otp_entity else None
-    
-            collector = Collector(self.hass, self.data[CONF_USERNAME], self.data[CONF_PASSWORD], self.data.get(CONF_BACKDAY, DEFAULT_BACKDAY), self.data[CONF_GMID], otp_retriever)
-            await collector.async_update()
-
             self.hass.config_entries.async_update_entry(self._reauth_entry,data=self.data)
+            await self.hass.config_entries.async_reload(self._reauth_entry.entry_id)
             return self.async_abort(reason="reconfigure_successful")
         
         return self.async_create_entry(title=DOMAIN,data=self.data)
