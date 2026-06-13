@@ -41,20 +41,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     _LOGGER.info("async_setup_entry")
     """Set up Jemena Outlook from a config entry."""
     otp_entity = entry.data.get(CONF_OTP_ENTITY)
+    _LOGGER.debug(f"otp_entity: {otp_entity}")
     otp_retriever = partial(
                 get_otp_token,
                 hass=hass,
                 entity_id=otp_entity
             ) if otp_entity else None
+    _LOGGER.debug(f"otp_retriever: {otp_retriever}")
     collector = Collector(hass, entry.data[CONF_USERNAME], entry.data[CONF_PASSWORD], entry.data.get(CONF_BACKDAY, DEFAULT_BACKDAY), entry.data[CONF_GMID], otp_retriever)
 
-    try:
-        await collector.async_update()
-    except ClientConnectorError as ex:
-        raise ConfigEntryNotReady from ex
+    #try:
+    #    await collector.async_update()
+    #except ClientConnectorError as ex:
+    #    raise ConfigEntryNotReady from ex
 
     coordinator = JemenaOutlookDataUpdateCoordinator(hass=hass, collector=collector)
-    await coordinator.async_refresh()
+    # await coordinator.async_refresh()
+    await coordinator.async_config_entry_first_refresh()
 
     hass_data = hass.data.setdefault(DOMAIN, {})
     hass_data[entry.entry_id] = {

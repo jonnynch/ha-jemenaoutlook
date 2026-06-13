@@ -22,6 +22,7 @@ class Collector:
     def __init__(self, hass, username, password, backday, gmid, otp_retriever):
         """Init collector."""
         _LOGGER.info("Initialise collector")
+        _LOGGER.debug(f"otp_retriever: {otp_retriever}")
         self.client = JemenaOutlookClient(username, password, gmid, otp_retriever, REQUESTS_TIMEOUT)
         self._hass = hass
         self.backday = backday

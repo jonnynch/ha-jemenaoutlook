@@ -52,7 +52,7 @@ The integration updates data every hour. Due to potential delays in the Jemena p
 
 The API integration requries OTP token.
 
-If OTP is provided, it can only be used within limited time (depends on Jemena configuration), reconfiguration will be required to resume the integration.
+If OTP is provided, it can only be used within limited time (8 hours), reconfiguration will be required to resume the integration.
 
 If OTP sensor is configured, it can retrieve the OTP automatically. It is done by creating IMAP entity and template sensor.
 

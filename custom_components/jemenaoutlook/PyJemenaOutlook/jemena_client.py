@@ -102,6 +102,16 @@ class JemenaOutlookClient(object):
         gmid = self.tfa.gmid
 
         response, json = await self._tfa_email_complete(session, code, reg_token, gigya_assertion, phv_token)
+        error_code = json.get("errorCode",0)
+        error_message = json.get("errorMessage",'')
+        error_details = json.get("errorDetails",'')
+        if error_code != 0:
+            return SimpleNamespace(**{
+                "error_code": error_code,
+                "error_message": error_message,
+                "error_details": error_details,
+                "success": False
+            })
         provider_assertion = json.get("providerAssertion","")
         self.tfa.provider_assertion = provider_assertion
 
@@ -389,12 +399,14 @@ class JemenaOutlookClient(object):
             elif response.tfa:
                 _LOGGER.error("Login failed: %s-%s", response.error_code, response.error_message)
                 _LOGGER.error("Details: %s", response.error_details)
+                _LOGGER.debug(f"otp_retriever: {self.otp_retriever}")
                 if self.otp_retriever:
                     await self.send_tfa()
                     code = await self.otp_retriever()
-                    response = await self.submit_tfa(code)
-                    if response.success:
-                        self.gmid = response.gmid
+                    if code:
+                        response = await self.submit_tfa(code)
+                        if response.success:
+                            self.gmid = response.gmid
                 else:
                     _LOGGER.error("Jemena Portal asked for TFA again, please try to reconfigure the entity")
             else:
