@@ -69,6 +69,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         _LOGGER.exception("Unexpected exception")
                         errors["base"] = f"{response.error_code} - {response.error_message}"
                 else:
+                    if entry_data.get(CONF_OTP_ENTITY):
+                        self.data[CONF_OTP_ENTITY] = entry_data.get(CONF_OTP_ENTITY)    
                     self.data[CONF_GMID] = entry_data.get(CONF_GMID)
                     return await self._async_finish_login()
             except Exception:
