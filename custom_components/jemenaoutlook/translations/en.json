@@ -8,7 +8,12 @@
           "username": "Username",
           "password": "Password",
           "gmid": "gmid",
-          "backday": "Number of days to reload per cycle (default: 2)",
+          "backday": "Number of days to reload per cycle (default: 2)" 
+        }
+      },
+      "otp": {
+        "title": "",
+        "data": {
           "otp": "One time OTP token",
           "otp_unique_name": "OTP entity which refresh automatically"
         }
@@ -16,21 +21,6 @@
     },
     "abort": {
       "reconfigure_successful": "Authentication updated successfully"
-    }
-  },
-  "options": {
-    "step": {
-      "init": {
-        "title": "Jemena Outlook Configuration",
-        "data": {
-          "username": "Username",
-          "password": "Password",
-          "gmid": "gmid",
-          "backday": "Number of days to reload per cycle (default: 2)",
-          "otp": "One time OTP token",
-          "otp_unique_name": "OTP entity which refresh automatically"
-        }
-      }
     }
   }
 }
