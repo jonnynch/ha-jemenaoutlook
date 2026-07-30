@@ -183,7 +183,6 @@ class JemenaOutlookClient(object):
         params  = {
             "emailID": email_id,
             "gigyaAssertion": gigya_assertion,
-            "mode": 'verify',
             "regToken": reg_token,
             "APIKey": GIGYA_APIKEY,
             'pageURL': 'https://myportal.jemena.com.au/', 
