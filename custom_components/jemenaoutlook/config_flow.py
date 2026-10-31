@@ -112,13 +112,17 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.error("Details: %s", response.error_details)
                 errors["base"] = f"{response.error_code} - {response.error_message}"
 
+        otp_entity_selector = vol.Optional(CONF_OTP_ENTITY)
+        if entry_data.get(CONF_OTP_ENTITY):
+            otp_entity_selector = vol.Optional(CONF_OTP_ENTITY, default=entry_data[CONF_OTP_ENTITY])
+            
         return self.async_show_form(
             step_id="otp",
             data_schema=vol.Schema({
                 vol.Optional(CONF_OTP): TextSelector(
                     TextSelectorConfig(type=TextSelectorType.TEXT, autocomplete="one-time-code, leave blank if you use otp entity")
                 ),
-                vol.Optional(CONF_OTP_ENTITY, default=entry_data.get(CONF_OTP_ENTITY)): EntitySelector(
+                otp_entity_selector: EntitySelector(
                     EntitySelectorConfig(domain=["sensor"])
                 )
             }),
